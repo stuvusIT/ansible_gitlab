@@ -20,3 +20,5 @@ galaxy_info:
     - Insert ansible galaxy tags here
 
 dependencies: []
+# postgres
+# redis-server

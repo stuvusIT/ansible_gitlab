@@ -1,0 +1,107 @@
+---
+- name: Add ruby repo
+  apt_repository:
+    repo: 'ppa:brightbox/ruby-ng'
+- name: Add yarn gpg repo key
+  apt_key:
+    url: "https://dl.yarnpkg.com/debian/pubkey.gpg"
+    state: present
+- name: Add yarn repo
+  apt_repository:
+      repo: deb https://dl.yarnpkg.com/debian/ stable main
+    state: present
+
+- name: Remove ruby1.8
+  apt:
+    name: ruby1.8
+    state: absent
+  when: ansible_pkg_mgr == "apt"
+
+- name: Update apt repositories cache
+  apt:
+    update_cache: yes
+  changed_when: false
+  when: ansible_pkg_mgr == "apt"
+
+- name: Install required packages
+  apt:
+    name: "{{item}}"
+  with_items:
+    - sudo
+    - build-essential
+    - zlib1g-dev
+    - libyaml-dev
+    - libssl-dev
+    - libgdbm-dev
+    - libre2-dev
+    - libreadline-dev
+    - libncurses5-dev
+    - libffi-dev
+    - curl
+    - openssh-server
+    - checkinstall
+    - libxml2-dev
+    - libxslt-dev
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - logrotate
+    - python-docutils
+    - pkg-config
+    - cmake
+    - git-core
+    - software-properties-common
+    - ruby2.4
+    - nodejs
+    - golang-1.9-go
+    - yarn
+  when: ansible_pkg_mgr == "apt"
+
+- name: Install bundler gem
+  gem:
+    name: bundler
+    state: latest
+
+- name: Add gitlab user
+  user:
+      name: git
+      shell: /bin/nologin
+      comment: 'GitLab'
+      state: present
+      groups: redis
+
+- name: "Create Databaseuser {{gitlab_db_user}}"
+  postgresql_user:
+    name: "{{gitlab_db_user}}"
+    role_attr_flags: CREATEDBi
+
+- name: "Create GitLab Database: {{gitlab_db_name}}"
+  postgresql_db:
+      name: "{{gitlab_db_name}}"
+      owner: "{{gitlab_db_user}}"
+
+- name: "Create pg_tgrm extension"
+  postgresql_ext:
+      name: pg_trgm
+      db: "{{gitlab_db_name}}"
+
+- name: Creates redis socket directory
+  file:
+    path: "{{redis_unixsocket | dirname }}"
+    state: directory
+    owner: redis
+    group: redis
+    mode: 0755
+
+- name: Clone gitlab to {{gitlab_install_path}}
+  git:
+    repo: https://gitlab.com/gitlab-org/gitlab-ee.git
+    dest: {{ gitlab_install_path }}
+    version: {{ gitlab_version_number }}
+  when: gitlab_version == "ee"
+
+- name: Clone gitlab to {{gitlab_install_path}}
+  git:
+    repo: https://gitlab.com/gitlab-org/gitlab-ce.git
+    dest: {{ gitlab_install_path }}
+    version: {{ gitlab_version_number }}
+  when: gitlab_version == "ce"
