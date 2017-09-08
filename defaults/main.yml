@@ -1,0 +1,67 @@
+---
+gitlab_host: localhost
+gitlab_port: 80
+gitlab_https: false
+gitlab_display_name: GitLab
+gitlab_email_reply_to: noreply@example.com
+gitlab_email_subject_suffix: ""
+gitlab_default_can_create_group: true
+gitlab_username_changing_enabled: true
+gitlab_issue_closing_pattern: '((?:[Cc]los(?:e[sd]?|ing)|[Ff]ix(?:e[sd]|ing)?|[Rr]esolv(?:e[sd]?|ing))(:?) +(?:(?:issues? +)?%{issue_ref}(?:(?:, *| +and +)?)|([A-Z][A-Z0-9_]+-\d+))+)'
+gitlab_default_projects_features_issues: true
+gitlab_default_projects_features_merge_requests: true
+gitlab_default_projects_features_wiki: true
+gitlab_default_projects_features_snippets: true
+gitlab_default_projects_features_builds: true
+gitlab_default_projects_features_container_registry: true
+gitlab_webhook_timeout: 10
+gitlab_repository_downloads_path: "shared/cache/archive/"
+gitlab_incoming_email_enabled: false
+gitlab_incoming_email_address: "gitlab-incoming+%{key}@gmail.com"
+gitlab_incoming_email_user: "gitlab-incoming@gmail.com"
+gitlab_incoming_email_password: "[REDACTED]"
+gitlab_incoming_email_host: "imap.gmail.com"
+gitlab_incoming_email_port: 993
+gitlab_incoming_email_ssl: true
+gitlab_incoming_email_start_tls: false
+gitlab_incoming_email_mailbox: "inbox"
+gitlab_incoming_email_idle_timeout: 60
+gitlab_artifacts_enabled: true
+gitlab_artifacts_path: shared/artifacts
+gitlab_artifacts_object_store_enabled: false
+gitlab_artifacts_object_store_remote_directory: artifacts
+gitlab_artifacts_object_store_connection_provider: AWS
+gitlab_artifacts_object_store_connection_aws_access_key_id: AWS_ACCESS_KEY_ID
+gitlab_artifacts_object_store_connection_aws_secret_access_key: AWS_SECRET_ACCESS_KEY
+gitlab_artifacts_object_store_connection_region: eu-central-1
+gitlab_lfs_enabled: true
+gitlab_lfs_storage_path: "shared/lfs-objects"
+gitlab_pages_enabled: false
+gitlab_pages_path: "shared/pages"
+gitlab_pages_host: example.com
+gitlab_pages_port: 80
+gitlab_pages_https: false
+gitlab_mattermost_enabled: false
+gitlab_mattermost_host: 'https://mattermost.example.com'
+gitlab_gravatar_
+gitlab_cron_jobs_stuck_ci_jobs_worker_cron: "0 * * * *"
+gitlab_cron_jobs_pipeline_schedule_worker_cron: "19 * * * *"
+gitlab_cron_jobs_expire_build_artifacts_worker_cron: "50 * * * *"
+gitlab_cron_jobs_repository_check_worker_cron: "20 * * * *"
+gitlab_cron_jobs_admin_email_worker_cron: "0 0 * * 0"
+gitlab_cron_jobs_repository_archive_cache_worker_cron: "0 * * * *"
+gitlab_cron_jobs_historical_data_worker_cron: "0 12 * * *"
+gitlab_cron_jobs_ldap_sync_worker_cron: "30 1 * * *"
+gitlab_cron_jobs_geo_repository_sync_worker_cron: "*/5 * * * *"
+gitlab_cron_jobs_geo_file_download_dispatch_worker_cron: "*/10 * * * *"
+gitlab_registry_enabled: false
+gitlab_gitlab_ci_all_broken_builds: true
+gitlab_gitlab_ci_add_pusher: true
+gitlab_gitlab_ci_builds_path: "builds/"
+gitlab_ldap_enabled: false
+gitlab_ldap_sync_time: 3600
+gitlab_ldap_
+gitlab_kerberos_enabled: false
+gitlab_kerberos_use_dedicated_port: false
+gitlab_kerberos_port: 8443
+gitlab_kerberos_https: true
