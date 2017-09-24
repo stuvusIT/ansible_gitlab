@@ -65,3 +65,45 @@ gitlab_kerberos_enabled: false
 gitlab_kerberos_use_dedicated_port: false
 gitlab_kerberos_port: 8443
 gitlab_kerberos_https: true
+gitlab_omniauth_enabled: false
+gitlab_omniauth_allow_single_sign_on: '["saml"]'
+gitlab_omniauth_block_auto_created_users: true
+gitlab_omniauth_auto_link_ldap_user: false
+gitlab_omniauth_auto_link_saml_user: false
+gitlab_gitlay_token: ''
+gitlab_repositories_storages:
+  default:
+    path: /home/git/repositories/
+    gitaly_address: unix:/home/git/gitlab/tmp/sockets/private/gitaly.socket # TCP connections are supported too (e.g. tcp://host:port)
+    # gitaly_token: 'special token' # Optional: override global gitaly.token for this storage.
+    failure_count_threshold: 10 # number of failures before stopping attempts
+    failure_wait_time: 30 # Seconds after an access failure before allowing access again
+    failure_reset_time: 1800 # Time in seconds to expire failures
+    storage_timeout: 5 # Time in seconds to wait before aborting a storage access attempt
+gitlab_backup_path: "tmp/backups"
+gitlab_backup_archive_permissions: 0600
+gitlab_backup_keep_time: 0
+gitlab_gitlab_shell_path: /home/git/gitlab-shell/
+gitlab_gitlab_shell_hooks_path: /home/git/gitlab-shell/hooks/
+gitlab_gitlab_shell_secret_file: /home/git/gitlab/.gitlab_shell_secret
+gitlab_gitlab_shell_upload_pack: true
+gitlab_gitlab_shell_receive_pack: true
+gitlab_gitlab_shell_git_timeout: 800
+gitlab_gitlab_shell_ssh_port: 22
+gitlab_git_bin_path: /usr/bin/git
+gitlab_git_max_size: 20971520
+gitlab_git_timeout: 10
+gitlab_webpack_dev_server_enabled: false
+gitlab_webpack_dev_server_host: "localhost"
+gitlab_webpack_dev_server_port: 3808
+gitlab_monitoring_ip_whitelists:
+  - 127.0.0.0/8
+gitlab_monitoring_sidekiq_exporter_enabled: false
+gitlab_monitoring_sidekiq_exporter_address: localhost
+gitlab_monitoring_sidekiq_exporter_port: 3807
+gitlab_rack_attack_git_basic_auth_enabled: false
+gitlab_rack_attack_git_basic_auth_ip_whitelist:
+  - 127.0.0.1
+gitlab_rack_attack_git_basic_auth_maxretry: 10
+gitlab_rack_attack_git_basic_auth_findtime: 60
+gitlab_rack_attack_git_basic_auth_bantime: 3600
