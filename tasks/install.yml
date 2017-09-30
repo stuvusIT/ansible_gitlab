@@ -72,7 +72,7 @@
 - name: "Create Databaseuser {{gitlab_db_user}}"
   postgresql_user:
     name: "{{gitlab_db_user}}"
-    role_attr_flags: CREATEDBi
+    role_attr_flags: CREATEDB
 
 - name: "Create GitLab Database: {{gitlab_db_name}}"
   postgresql_db:
@@ -105,3 +105,135 @@
     dest: {{ gitlab_install_path }}
     version: {{ gitlab_version_number }}
   when: gitlab_version == "ce"
+
+- name: Place gitlab config
+  template: 
+    src: templates/gitlab.yml.j2
+    dest: "{{ gitlab_install_path }}/config/gitlab.yml"
+
+- name: Copy secrets file
+  template:
+    src:
+
+- name: Set owner of log directory
+  file:
+    path: "{{ gitlab_install_path }}/log"
+    owner: git
+    mode: "u+rwX,go-w"
+
+- name: Set owner of tmp directory
+  file:
+    path: "{{ gitlab_install_path }}/tmp"
+    owner: git
+    mode: "u+rwX"
+
+- name: Set permission on tmp/pids
+  file:
+    path: "{{ gitlab_install_path }}/tmp/pids"
+    mode: "u+rwX"
+
+- name: Set permission on tmp/sockets
+  file:
+    path: "{{ gitlab_install_path }}/tmp/pids"
+    mode: "u+rwX"
+
+- name: Create public/uploads/ directory
+  file:
+    path: "{{ gitlab_install_path }}/public/uploads"
+    user: git
+    mode: 0700
+
+- name: Change the permissions of the directory where CI job traces are stored
+  file:
+    path: "{{ gitlab_install_path }}/builds"
+    mode: "u+rwX"
+
+- name: Change the permissions of the directory where CI artifacts are stored
+  file:
+    path: "{{ gitlab_install_path }}/shared/artifacts/"
+    mode: "u+rwX"
+
+- name: Change the permissions of the directory where GitLab Pages are stored
+  file:
+    path: "{{ gitlab_install_path }}/shared/pages/"
+    mode: "ug+rwX"
+
+- name: Place unicorn config 
+  template:
+    src: templates/unicorn.rb.j2
+    dest: "{{ gitlab_install_path }}/config/unicorn.rb"
+  when: gitlab_unicorn_config_path is not defined
+
+- name: Copy unicorn config owner
+  copy: 
+    src: "{{gitlab_unicorn_config_path}}"
+    dest: "{{ gitlab_install_path }}/config/unicorn.rb"
+  when: gitlab_unicorn_config_path is defined
+
+- name: Copy the rack attack config
+  copy: gitlab_unicorn_config_
+    src: "{{gitlab_rack_attack_config_path}}"
+    dest: "{{ gitlab_install_path }}/config/rack_attack.rb"
+
+- name: Configure Git global settings for git user
+  git_config:
+    name: core.autocrlfs
+    scope: global
+    value: input
+
+- name: Disable 'git gc --auto' because GitLab already runs 'git gc' when needed
+  git_config:
+    name: gc.auto
+    scope: global
+    value: 0
+
+- name: Enable packfile bitmaps
+  git_config:
+    name: repack.writeBitmaps
+    scope: global
+    value: true
+
+- name: Place resque config 
+  template:
+    src: templates/resque.yml.j2
+    dest: "{{ gitlab_install_path }}/config/resque.yml"
+
+- name: Copy database config
+  template:
+    src: templates/database.yml.j2
+    dest: "{{ gitlab_install_path }}/config/database.yml"
+    owner: git
+    mode: "o-rwx"
+
+- name: Install gems with bundler
+  bundler:
+    state: present
+    deployment_mode: yes
+    exclude_groups: 
+      - development
+      - test
+      - aws
+      - mysql
+      - kerberos
+  
+- name: Install gitlab shell
+  command: "sudo -u git -H bundle exec rake gitlab:shell:install REDIS_URL=unix:{{redis_unixsocket}} RAILS_ENV=production SKIP_STORAGE_VALIDATION=true"
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+- name: Installing gitlab-workhorse
+  command: 'sudo -u git -H bundle exec rake "gitlab:workhorse:install[/home/git/gitlab-workhorse]" RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+- name: Initialize Database and Activate Advanced Features
+  command: 'sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD={{gitlab_root_password}} GITLAB_ROOT_EMAIL={{gitlab_root_mail}}'  
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+# init script
+# gitaly
+# logrotate
+#Compile GetText PO files 
+# compile assets
+
