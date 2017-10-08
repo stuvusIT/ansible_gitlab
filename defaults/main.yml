@@ -43,7 +43,9 @@ gitlab_pages_port: 80
 gitlab_pages_https: false
 gitlab_mattermost_enabled: false
 gitlab_mattermost_host: 'https://mattermost.example.com'
-gitlab_gravatar_
+gitlab_gravatar_urls_possible_placeholders: "%{hash} %{size} %{email} %{username}"
+gitlab_gravatar_urls_plain_url: http://www.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon
+gitlab_gravatar_urls_ssl_url: https://secure.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon
 gitlab_cron_jobs_stuck_ci_jobs_worker_cron: "0 * * * *"
 gitlab_cron_jobs_pipeline_schedule_worker_cron: "19 * * * *"
 gitlab_cron_jobs_expire_build_artifacts_worker_cron: "50 * * * *"
@@ -60,7 +62,6 @@ gitlab_gitlab_ci_add_pusher: true
 gitlab_gitlab_ci_builds_path: "builds/"
 gitlab_ldap_enabled: false
 gitlab_ldap_sync_time: 3600
-gitlab_ldap_
 gitlab_kerberos_enabled: false
 gitlab_kerberos_use_dedicated_port: false
 gitlab_kerberos_port: 8443
@@ -115,7 +116,6 @@ gitlab_unicorn_stderr_path: "/home/git/gitlab/log/unicorn.stderr.log"
 gitlab_unicorn_stdout_path: "/home/git/gitlab/log/unicorn.stdout.log"
 gitlab_unicorn_preload_app: true
 gitlab_unicorn_check_client_connection: false
-gitlab_unicorn_config_
 gitlab_db_pool: 10
 
 

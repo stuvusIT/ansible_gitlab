@@ -1,2 +1,4 @@
 ---
+ - import_tasks: install.yml
+   become: yes
 # tasks file for .

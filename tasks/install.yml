@@ -8,7 +8,7 @@
     state: present
 - name: Add yarn repo
   apt_repository:
-      repo: deb https://dl.yarnpkg.com/debian/ stable main
+    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
     state: present
 
 - name: Remove ruby1.8
@@ -52,7 +52,7 @@
     - software-properties-common
     - ruby2.4
     - nodejs
-    - golang-1.9-go
+    - golang
     - yarn
   when: ansible_pkg_mgr == "apt"
 
@@ -95,15 +95,15 @@
 - name: Clone gitlab to {{gitlab_install_path}}
   git:
     repo: https://gitlab.com/gitlab-org/gitlab-ee.git
-    dest: {{ gitlab_install_path }}
-    version: {{ gitlab_version_number }}
+    dest: "{{ gitlab_install_path }}"
+    version: "{{ gitlab_version_number }}"
   when: gitlab_version == "ee"
 
 - name: Clone gitlab to {{gitlab_install_path}}
   git:
     repo: https://gitlab.com/gitlab-org/gitlab-ce.git
-    dest: {{ gitlab_install_path }}
-    version: {{ gitlab_version_number }}
+    dest: "{{ gitlab_install_path }}"
+    version: "{{ gitlab_version_number }}"
   when: gitlab_version == "ce"
 
 - name: Place gitlab config
@@ -171,7 +171,7 @@
   when: gitlab_unicorn_config_path is defined
 
 - name: Copy the rack attack config
-  copy: gitlab_unicorn_config_
+  copy:
     src: "{{gitlab_rack_attack_config_path}}"
     dest: "{{ gitlab_install_path }}/config/rack_attack.rb"
 
@@ -231,9 +231,77 @@
   args:
     chdir: "{{ gitlab_install_path }}"
 
-# init script
-# gitaly
-# logrotate
-#Compile GetText PO files 
-# compile assets
+- name: Download systemd service files from gitlab
+  get_url:
+    url:  "https://gitlab.com/gitlab-org/gitlab-recipes/raw/master/init/systemd/{{item}}"
+    dest: "/etc/systemd/system/{{item}}"
+  with_items:
+    - gitlab-sidekiq.service
+    - gitlab-unicorn.service
+    - gitlab-workhorse.service
+    - gitlab-mailroom.service
+    - gitlab-gitaly.service
+
+- name: Enable services
+  systemd:
+    state: enabled
+    daemon_reload: yes
+    name: "{{item}}"
+  with_items:
+    - gitlab-sidekiq.service
+    - gitlab-unicorn.service
+    - gitlab-workhorse.service
+    - gitlab-mailroom.service
+    - gitlab-gitaly.service
+
+- name: Fetch Gitaly source with Git and compile with Go
+  command: 'sudo -u git -H bundle exec rake "gitlab:gitaly:install[/home/git/gitaly]" RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+- name: Restrict Gitaly socket access
+  file:
+    path: "{{ gitlab_install_path }}/tmp/sockets/private"
+    user: git
+    mode: 0700
+
+- name: Setup Logrotate
+  copy:
+    src: "{{ gitlab_install_path }}/lib/support/logrotate/gitlab"
+    dest: /etc/logrotate.d/gitlab
+    remote_src: yes
+
+- name: Compile GetText PO files
+  command: 'sudo -u git -H bundle exec rake gettext:pack RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+- name: Compile GetText PO files
+  command: 'sudo -u git -H bundle exec rake gettext:po_to_json RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+- name: Compile Assets
+  command: 'sudo -u git -H yarn install --production --pure-lockfile'
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+- name: Compile Assets
+  command: 'sudo -u git -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path }}"
+
+- name: Start GitLab
+  systemd: 
+    state: started
+    name: "{{item}}"
+  with_items:
+    with_items:
+    - gitlab-sidekiq.service
+    - gitlab-unicorn.service
+    - gitlab-workhorse.service
+    - gitlab-mailroom.service
+    - gitlab-gitaly.service
+
+
 
