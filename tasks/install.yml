@@ -29,6 +29,8 @@
   with_items:
     - sudo
     - build-essential
+    - fakeroot
+    - dpkg-dev
     - zlib1g-dev
     - libyaml-dev
     - libssl-dev
@@ -48,13 +50,68 @@
     - python-docutils
     - pkg-config
     - cmake
-    - git-core
     - software-properties-common
     - ruby2.4
     - nodejs
     - golang
     - yarn
+    - python-psycopg2
   when: ansible_pkg_mgr == "apt"
+
+# work around section for bug https://bugs.launchpad.net/ubuntu/+source/gnutls26/+bug/1111882
+# compiling git with open ssl
+- name: Create git source directory
+  file:
+    path: "/tmp/source-git/"
+    state: directory
+    mode: 0755
+
+- name: Install build dep for git 
+  apt:
+    name: git
+    state: build-dep
+
+- name: Install libcurl4-openssl-dev
+  apt:
+    name: libcurl4-openssl-dev
+    state: present
+
+- name: Run apt-get source git
+  shell: "apt-get source git"
+  args:
+    chdir: /tmp/source-git/
+ 
+- name: Find correct path
+  shell: cd $(find -mindepth 1 -maxdepth 1 -type d -name "git-*"); pwd
+  args:
+    chdir: /tmp/source-git/
+  register: source_git_path
+
+- name: Debug
+  debug:
+    msg: "{{source_git_path['stdout_lines'][0]}}"
+
+- name: Replace gnutls with openssl
+  shell: sed -i -- 's/libcurl4-gnutls-dev/libcurl4-openssl-dev/' ./debian/control
+  args:
+    chdir: "{{source_git_path['stdout_lines'][0]}}"
+
+- name: Compile time, itself, is long. Skips the tests. Do so at your own peril.
+  shell: sed -i -- '/TEST\s*=\s*test/d' ./debian/rules
+  args:
+    chdir: "{{source_git_path['stdout_lines'][0]}}"
+
+- name: Build it.
+  shell: dpkg-buildpackage -rfakeroot -b
+  args:
+    chdir: "{{source_git_path['stdout_lines'][0]}}"
+
+- name: Install git
+  shell: find .. -type f -name "git_*ubuntu*.deb" -exec sudo dpkg -i \{\} \;
+  args:
+    chdir: "{{source_git_path['stdout_lines'][0]}}"
+
+# End work around
 
 - name: Install bundler gem
   gem:
@@ -71,16 +128,20 @@
 
 - name: "Create Databaseuser {{gitlab_db_user}}"
   postgresql_user:
+    login_host: "{{postgres_run_directory}}"
     name: "{{gitlab_db_user}}"
     role_attr_flags: CREATEDB
 
 - name: "Create GitLab Database: {{gitlab_db_name}}"
   postgresql_db:
-      name: "{{gitlab_db_name}}"
-      owner: "{{gitlab_db_user}}"
+      login_host: "{{postgres_run_directory}}"
+      name: "{{gitlab_db_name|mandatory}}"
+      owner: "{{gitlab_db_user|mandatory}}"
+      login_user: "{{gitlab_db_user}}"
 
 - name: "Create pg_tgrm extension"
   postgresql_ext:
+      login_host: "{{postgres_run_directory}}"
       name: pg_trgm
       db: "{{gitlab_db_name}}"
 
@@ -92,15 +153,17 @@
     group: redis
     mode: 0755
 
-- name: Clone gitlab to {{gitlab_install_path}}
+- name: Clone gitlab to {{gitlab_install_path | mandatory}}
   git:
+    depth: 1
     repo: https://gitlab.com/gitlab-org/gitlab-ee.git
-    dest: "{{ gitlab_install_path }}"
-    version: "{{ gitlab_version_number }}"
+    dest: "{{ gitlab_install_path | mandatory }}"
+    version: "{{ gitlab_version_number | mandatory }}"
   when: gitlab_version == "ee"
 
 - name: Clone gitlab to {{gitlab_install_path}}
   git:
+    depth: 1
     repo: https://gitlab.com/gitlab-org/gitlab-ce.git
     dest: "{{ gitlab_install_path }}"
     version: "{{ gitlab_version_number }}"
