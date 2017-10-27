@@ -52,16 +52,15 @@
     - cmake
     - software-properties-common
     - ruby2.4
+    - ruby2.4-dev
     - nodejs
     - golang
     - yarn
     - python-psycopg2
+    - git
+    - libpq-dev
+    - libpq5
   when: ansible_pkg_mgr == "apt"
-
-- name: Install bundler gem
-  gem:
-    name: bundler
-    state: latest
 
 - name: Add gitlab user
   user:
@@ -70,6 +69,13 @@
       comment: 'GitLab'
       state: present
       groups: redis
+
+- name: Install bundler gem
+  gem:
+    name: bundler
+    state: latest
+  become: yes
+  become_user: git
 
 - name: "Create Databaseuser {{gitlab_db_user}}"
   postgresql_user:
@@ -105,6 +111,8 @@
     dest: "{{ gitlab_install_path | mandatory }}"
     version: "{{ gitlab_version_number | mandatory }}"
   when: gitlab_version == "ee"
+  become: yes
+  become_user: git
 
 - name: Clone gitlab to {{gitlab_install_path}}
   git:
@@ -113,6 +121,8 @@
     dest: "{{ gitlab_install_path }}"
     version: "{{ gitlab_version_number }}"
   when: gitlab_version == "ce"
+  become: yes
+  become_user: git
 
 - name: Place gitlab config
   template: 
@@ -121,7 +131,10 @@
 
 - name: Copy secrets file
   template:
-    src:
+    src: templates/secrets.yml.j2
+    dest: "{{ gitlab_install_path }}/config/secrets.yml"
+    mode: 0600
+    owner: git
 
 - name: Set owner of log directory
   file:
@@ -148,7 +161,8 @@
 - name: Create public/uploads/ directory
   file:
     path: "{{ gitlab_install_path }}/public/uploads"
-    user: git
+    state: directory
+    owner: git
     mode: 0700
 
 - name: Change the permissions of the directory where CI job traces are stored
@@ -182,6 +196,13 @@
   copy:
     src: "{{gitlab_rack_attack_config_path}}"
     dest: "{{ gitlab_install_path }}/config/rack_attack.rb"
+  when: gitlab_rack_attack_config_path is defined
+
+- name: Copy the rack attack config
+  copy:
+    src: "files/rack_attack.rb"
+    dest: "{{ gitlab_install_path }}/config/rack_attack.rb"
+  when: gitlab_rack_attack_config_path is not defined
 
 - name: Configure Git global settings for git user
   git_config:
@@ -213,16 +234,31 @@
     owner: git
     mode: "o-rwx"
 
+- name: Create Bundler direcotries
+  file:
+    path: "{{ gitlab_install_path }}/.bundle"
+    state: directory
+    owner: git
+
+- name: Create Bundler direcotries
+  file:
+    path: "{{ gitlab_install_path }}/vendor/"
+    state: directory
+    owner: git
+
 - name: Install gems with bundler
   bundler:
     state: present
     deployment_mode: yes
+    gemfile: "{{ gitlab_install_path }}/Gemfile"
     exclude_groups: 
       - development
       - test
       - aws
       - mysql
       - kerberos
+  become: yes
+  become_user: git
   
 - name: Install gitlab shell
   command: "sudo -u git -H bundle exec rake gitlab:shell:install REDIS_URL=unix:{{redis_unixsocket}} RAILS_ENV=production SKIP_STORAGE_VALIDATION=true"

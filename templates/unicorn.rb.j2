@@ -38,11 +38,9 @@ working_directory {{ gitlab_unicorn_working_directory }} # available in 0.94.0+
 # Listen on both a Unix domain socket and a TCP port.
 # If you are load-balancing multiple Unicorn masters, lower the backlog
 # setting to e.g. 64 for faster failover.
-{% for item in  %}
-  
+{% for item in gitlab_unicorn_listen %}
+listen {{item}}
 {% endfor %}
-listen "/home/git/gitlab/tmp/sockets/gitlab.socket", :backlog => 1024
-listen "127.0.0.1:8080", :tcp_nopush => true
 
 # nuke workers after 30 seconds instead of 60 seconds (the default)
 #

@@ -55,9 +55,12 @@ production: &base
     # Customize if you have GitLab behind a reverse proxy which is running on a different machine.
     # Add the IP address for your reverse proxy to the list, otherwise users will appear signed in from that address.
     trusted_proxies:
+    {% if gitlab_trusted_proxies is defined %}
     {% for trusted_proxie_opt in gitlab_trusted_proxies %}
       - {{trusted_proxie_opt}}
     {% endfor %}
+    {% endif %}
+
       # Examples:
       #- 192.168.1.0/24
       #- 192.168.2.1
@@ -81,7 +84,7 @@ production: &base
     # Uncomment and set to false if you need to disable email sending from GitLab (default: true)
     # email_enabled: true
     # Email address used in the "From" field in mails sent by GitLab
-    email_from: {{gitlab_email_from | required}}
+    email_from: {{gitlab_email_from | mandatory}}
     email_display_name: {{gitlab_display_name }}
     email_reply_to: {{ gitlab_email_reply_to}}
     email_subject_suffix: {{ gitlab_email_subject_suffix }}
@@ -180,10 +183,10 @@ production: &base
     host: {{gitlab_pages_host}}
     port: {{gitlab_pages_port}} # Set to 443 if you serve the pages with HTTPS
     https: {{gitlab_pages_https}} # Set to true if you serve the pages with HTTPS
-    {% if gitlab_pages_external_http is define d%}
+    {% if gitlab_pages_external_http is defined%}
     external_http: {{gitlab_pages_external_http}}
     {% endif %}
-    {% if gitlab_pages_external_https is define d%}
+    {% if gitlab_pages_external_https is defined%}
     external_https: {{gitlab_pages_external_https}}
     {% endif %}
     # external_http: ["1.1.1.1:80", "[2001::1]:80"] # If defined, enables custom domain support in GitLab Pages
@@ -208,47 +211,47 @@ production: &base
   cron_jobs:
     # Flag stuck CI jobs as failed
     stuck_ci_jobs_worker:
-      cron: {{gitlab_cron_jobs_stuck_ci_jobs_worker_cron}}
+      cron: "{{gitlab_cron_jobs_stuck_ci_jobs_worker_cron}}"
     # Execute scheduled triggers
     pipeline_schedule_worker:
-      cron: {{gitlab_cron_jobs_pipeline_schedule_worker_cron}}
+      cron: "{{gitlab_cron_jobs_pipeline_schedule_worker_cron}}"
     # Remove expired build artifacts
     expire_build_artifacts_worker:
       cron: {{gitlab_cron_jobs_expire_build_artifacts_worker_cron}}
     # Periodically run 'git fsck' on all repositories. If started more than
     # once per hour you will have concurrent 'git fsck' jobs.
     repository_check_worker:
-      cron: {{gitlab_cron_jobs_repository_check_worker_cron}}
+      cron: "{{gitlab_cron_jobs_repository_check_worker_cron}}"
     # Send admin emails once a week
     admin_email_worker:
-      cron: {{gitlab_cron_jobs_admin_email_worker_cron}}
+      cron: "{{gitlab_cron_jobs_admin_email_worker_cron}}"
 
     # Remove outdated repository archives
     repository_archive_cache_worker:
-      cron: {{gitlab_cron_jobs_repository_archive_cache_worker_cron}}
+      cron: "{{gitlab_cron_jobs_repository_archive_cache_worker_cron}}"
 
     ##
     # GitLab EE only jobs:
 
     # Snapshot active users statistics
     historical_data_worker:
-      cron: {{gitlab_cron_jobs_historical_data_worker_cron}}
+      cron: "{{gitlab_cron_jobs_historical_data_worker_cron}}"
 
     # In addition to refreshing users when they log in,
     # periodically refresh LDAP users membership.
     # NOTE: This will only take effect if LDAP is enabled
     ldap_sync_worker:
-      cron: {{gitlab_cron_jobs_ldap_sync_worker_cron}}
+      cron: "{{gitlab_cron_jobs_ldap_sync_worker_cron}}"
 
     # GitLab Geo repository sync worker
     # NOTE: This will only take effect if Geo is enabled
     geo_repository_sync_worker:
-      cron: {{gitlab_cron_jobs_geo_repository_sync_worker_cron}}
+      cron: "{{gitlab_cron_jobs_geo_repository_sync_worker_cron}}"
 
     # GitLab Geo file download dispatch worker
     # NOTE: This will only take effect if Geo is enabled
     geo_file_download_dispatch_worker:
-      cron: {{gitlab_cron_jobs_geo_file_download_dispatch_worker_cron}}
+      cron: "{{gitlab_cron_jobs_geo_file_download_dispatch_worker_cron}}"
 
   registry:
     {% if gitlab_registry_enabled %}
@@ -306,9 +309,12 @@ production: &base
     # Warning: if you set this value too low, every click in GitLab will be a
     # "slow click" for all of your LDAP users.
     sync_time: {{gitlab_ldap_sync_time}}
+    {% if gitlab_ldap_servers is defined -%}
+    servers:
+      {{ gitlab_ldap_servers | to_yaml(indent=2) | indent(6,false)}}
+    {% endif %}
 
-    servers: {{ gitlab_ldap_servers | to_nice_yaml}}
-      
+
   ## Kerberos settings
   kerberos:
     # Allow the HTTP Negotiate authentication method for Git clients
@@ -343,19 +349,19 @@ production: &base
   ## OmniAuth settings
   omniauth:
     # Allow login via Twitter, Google, etc. using OmniAuth providers
-    enabled: {{gitlab_omniauth_enabled}} 
-
+    enabled: {{gitlab_omniauth_enabled}}
+    {% if gitlab_omniauth_enabled %}
     # Uncomment this to automatically sign in with a specific omniauth provider's without
     # showing GitLab's sign-in page (default: show the GitLab sign-in page)
     {% if gitlab_omniauth_auto_sign_in_with_provider is defined%}
-    auto_sign_in_with_provider: {{gitlab_omniauth_auto_sign_in_with_provider}} 
+    auto_sign_in_with_provider: {{gitlab_omniauth_auto_sign_in_with_provider}}
     {% endif %}
-    # 
+    #
 
     # Sync user's email address from the specified Omniauth provider every time the user logs
     # in (default: nil). And consequently make this field read-only.
     {% if gitlab_omniauth_sync_email_from_provider is defined%}
-    sync_email_from_provider: {{gitlab_omniauth_sync_email_from_provider}} 
+    sync_email_from_provider: {{gitlab_omniauth_sync_email_from_provider}}
     {% endif %}
 
 
@@ -462,10 +468,10 @@ production: &base
     {% if gitlab_omniauth_cas3_session_duration is defined %}
     cas3:
       session_duration: {{gitlab_omniauth_cas3_session_duration}}
-    {% endif %} 
+    {% endif %}
     # cas3:
     #   session_duration: 28800
-
+    {% endif %}
   # Shared file storage settings
   shared:
     {% if gitlab_shared_path is defined%}
@@ -490,8 +496,9 @@ production: &base
     # IMPORTANT: None of the path components may be symlink, because
     # gitlab-shell invokes Dir.pwd inside the repository path and that results
     # real path not the symlink.
-    storages: {{gitlab_repositories_storages | to_nice_yaml}} # You must have at least a `default` storage path.
-      
+    storages:
+      {{gitlab_repositories_storages | to_nice_yaml(indent=2) | indent(6,false)}} # You must have at least a `default` storage path.
+
 
 
   ## Backup settings
@@ -502,7 +509,7 @@ production: &base
     {% if gitlab_backup_pg_schema is defined %}
     pg_schema: {{gitlab_backup_pg_schema}}
     {% endif %}
-    
+
     # archive_permissions: 0640 # Permissions for the resulting backup.tar file (default: 0600)
     # keep_time: 604800   # default: 0 (forever) (in seconds)
     # pg_schema: public     # default: nil, it means that all schemas will be backed up
@@ -525,14 +532,14 @@ production: &base
 
   ## GitLab Shell settings
   gitlab_shell:
-    path: {{gitlab_gitlab_shell_path}}
-    hooks_path: {{gitlab_gitlab_shell_hooks_path}}
+    path: "{{gitlab_gitlab_shell_path}}"
+    hooks_path: "{{gitlab_gitlab_shell_hooks_path}}"
 
     # File that contains the secret key for verifying access for gitlab-shell.
     # Default is '.gitlab_shell_secret' relative to Rails.root (i.e. root of the GitLab app).
-    {% if gitlab_gitlab_shell_secret_file %}
-    secret_file: {{gitlab_gitlab_shell_secret_file}}
-    {% endif %}
+    {% if gitlab_gitlab_shell_secret_file -%}
+    secret_file: "{{gitlab_gitlab_shell_secret_file}}"
+    {%- endif %}
 
     # Git over HTTP
     upload_pack: {{gitlab_gitlab_shell_upload_pack}}
@@ -583,7 +590,8 @@ production: &base
     {% endif %}
     # unicorn_sampler_interval: 10
     # IP whitelist to access monitoring endpoints
-    ip_whitelist: {{gitlab_monitoring_ip_whitelists| to_nice_yaml}}
+    ip_whitelist:
+      {{gitlab_monitoring_ip_whitelists| to_nice_yaml}}
 
     # Sidekiq exporter is webserver built in to Sidekiq to expose Prometheus metrics
     sidekiq_exporter:
