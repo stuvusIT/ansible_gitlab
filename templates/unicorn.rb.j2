@@ -33,7 +33,7 @@ worker_processes {{ gitlab_unicorn_worker_processes }}
 
 # Help ensure your application will always spawn in the symlinked
 # "current" directory that Capistrano sets up.
-working_directory {{ gitlab_unicorn_working_directory }} # available in 0.94.0+
+working_directory "{{ gitlab_unicorn_working_directory }}" # available in 0.94.0+
 
 # Listen on both a Unix domain socket and a TCP port.
 # If you are load-balancing multiple Unicorn masters, lower the backlog
@@ -60,13 +60,13 @@ listen {{item}}
 timeout {{gitlab_unicorn_timeout}}
 
 # feel free to point this anywhere accessible on the filesystem
-pid {{gitlab_unicorn_pid}}
+pid "{{gitlab_unicorn_pid}}"
 
 # By default, the Unicorn logger will write to stderr.
 # Additionally, some applications/frameworks log to stderr or stdout,
 # so prevent them from going to /dev/null when daemonized here:
-stderr_path {{gitlab_unicorn_stderr_path}}
-stdout_path {{gitlab_unicorn_stdout_path}}
+stderr_path "{{gitlab_unicorn_stderr_path}}"
+stdout_path "{{gitlab_unicorn_stdout_path}}"
 
 # combine Ruby 2.0.0dev or REE with "preload_app true" for memory savings
 # http://rubyenterpriseedition.com/faq.html#adapt_apps_for_cow
@@ -80,7 +80,7 @@ GC.respond_to?(:copy_on_write_friendly=) and
 # while queued.  This is only guaranteed to detect clients on the same
 # host unicorn runs on, and unlikely to detect disconnects even on a
 # fast LAN.
-check_client_connection {{gitlab_unicorn_check_client_connection}}false
+check_client_connection {{gitlab_unicorn_check_client_connection}}
 
 before_fork do |server, worker|
   # the following is highly recommended for Rails + "preload_app true"

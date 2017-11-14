@@ -1,0 +1,42 @@
+#
+# PRODUCTION
+#
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: {{gitlab_db_name}}
+  pool: {{gitlab_db_pool}}
+  username: {{gitlab_db_user_tmp_var}}
+  host: 'localhost'
+  socket: {{postgres_unix_socket_directories}}
+  # password:
+  # host: localhost
+  # port: 5432
+  # load_balancing:
+  #   hosts:
+  #     - host1.example.com
+  #     - host2.example.com
+
+#
+# Development specific
+#
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: {{gitlab_db_name}}
+  pool: {{gitlab_db_pool}}
+  username: {{gitlab_db_user}}
+  # password:
+  # host: localhost
+
+#
+# Staging specific
+#
+staging:
+  adapter: postgresql
+  encoding: unicode
+  database: {{gitlab_db_name}}
+  pool: {{gitlab_db_pool}}
+  username: {{gitlab_db_user}}
+  # password:
+  # host: localhost
