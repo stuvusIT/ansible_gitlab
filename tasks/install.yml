@@ -1,74 +1,5 @@
 ---
-- name: Add ruby repo
-  apt_repository:
-    repo: 'ppa:brightbox/ruby-ng'
-- name: Add yarn gpg repo key
-  apt_key:
-    url: "https://dl.yarnpkg.com/debian/pubkey.gpg"
-- name: Add yarn repo
-  apt_repository:
-    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
-- name: Add Go repo
-  apt_repository:
-    repo: 'ppa:gophers/archive'
-
-- name: Remove ruby1.8
-  apt:
-    name: ruby1.8
-    state: absent
-  when: ansible_pkg_mgr == "apt"
-
-- name: Add nodejs gpg key
-  apt_key:
-    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-
-- name: Add nodejs repositoriy
-  apt_repository:
-    repo: "deb https://deb.nodesource.com/node_8.x artful main"
-
-- name: Update apt repositories cache
-  apt:
-    update_cache: yes
-  changed_when: false
-  when: ansible_pkg_mgr == "apt"
-
-- name: Install required packages
-  apt:
-    name: "{{item}}"
-  with_items:
-    - sudo
-    - build-essential
-    - fakeroot
-    - dpkg-dev
-    - zlib1g-dev
-    - libyaml-dev
-    - libssl-dev
-    - libgdbm-dev
-    - libre2-dev
-    - libreadline-dev
-    - libncurses5-dev
-    - libffi-dev
-    - curl
-    - openssh-server
-    - checkinstall
-    - libxml2-dev
-    - libxslt-dev
-    - libcurl4-openssl-dev
-    - libicu-dev
-    - logrotate
-    - python-docutils
-    - pkg-config
-    - cmake
-    - software-properties-common
-    - ruby2.4
-    - ruby2.4-dev
-    - nodejs
-    - golang-go
-    - yarn
-    - python-psycopg2
-    - git
-    - libpq-dev
-    - libpq5
+- import_tasks: apt_install.yml
   when: ansible_pkg_mgr == "apt"
 
 - name: Add gitlab user
@@ -85,24 +16,7 @@
   become: yes
   become_user: git
 
-- name: "Create database user {{gitlab_db_user}}"
-  postgresql_user:
-    login_host: "{{postgres_run_directory}}"
-    name: "{{gitlab_db_user}}"
-    role_attr_flags: CREATEDB
-
-- name: "Create GitLab database: {{gitlab_db_name}}"
-  postgresql_db:
-      login_host: "{{postgres_run_directory}}"
-      name: "{{gitlab_db_name|mandatory}}"
-      owner: "{{gitlab_db_user|mandatory}}"
-      login_user: "{{gitlab_db_user}}"
-
-- name: "Create pg_tgrm extension"
-  postgresql_ext:
-      login_host: "{{postgres_run_directory}}"
-      name: pg_trgm
-      db: "{{gitlab_db_name}}"
+- import_tasks: postgres_install.yml
 
 - name: Creates redis socket directory
   file:
@@ -125,95 +39,95 @@
   git:
     depth: 1
     repo: https://gitlab.com/gitlab-org/gitlab-ce.git
-    dest: "{{ gitlab_install_path }}"
+    dest: "{{ gitlab_install_path | mandatory}}"
     version: "{{ gitlab_version_number }}"
     force: yes
   when: gitlab_version == "ce"
 
-- name: Set owner of gitlab directory
+- name: "Set owner of gitlab directory {{gitlab_install_path}}"
   file:
-    path: "{{ gitlab_install_path }}"
+    path: "{{ gitlab_install_path | mandatory}}"
     owner: git
     recurse: yes
 
 - name: Place gitlab config
   template: 
     src: templates/gitlab.yml.j2
-    dest: "{{ gitlab_install_path }}/config/gitlab.yml"
+    dest: "{{ gitlab_install_path | mandatory}}/config/gitlab.yml"
 
 - name: Copy secrets file
   template:
     src: templates/secrets.yml.j2
-    dest: "{{ gitlab_install_path }}/config/secrets.yml"
+    dest: "{{ gitlab_install_path | mandatory}}/config/secrets.yml"
     mode: 0600
     owner: git
 
 - name: Set owner of log directory
   file:
-    path: "{{ gitlab_install_path }}/log"
+    path: "{{ gitlab_install_path | mandatory}}/log"
     owner: git
     mode: 0751
 
 - name: Set owner of tmp directory
   file:
-    path: "{{ gitlab_install_path }}/tmp"
+    path: "{{ gitlab_install_path | mandatory}}/tmp"
     owner: git
     mode: 0751
 
 - name: Set permission on tmp/pids
   file:
-    path: "{{ gitlab_install_path }}/tmp/pids"
+    path: "{{ gitlab_install_path | mandatory}}/tmp/pids"
     mode: 0751
 
 - name: Set permission on tmp/sockets
   file:
-    path: "{{ gitlab_install_path }}/tmp/pids"
+    path: "{{ gitlab_install_path | mandatory}}/tmp/sockets"
     mode: 0751
 
 - name: Create public/uploads/ directory
   file:
-    path: "{{ gitlab_install_path }}/public/uploads"
+    path: "{{ gitlab_install_path | mandatory}}/public/uploads"
     state: directory
     owner: git
     mode: 0700
 
 - name: Change the permissions of the directory where CI job traces are stored
   file:
-    path: "{{ gitlab_install_path }}/builds"
+    path: "{{ gitlab_install_path | mandatory}}/builds"
     mode: 0751
 
 - name: Change the permissions of the directory where CI artifacts are stored
   file:
-    path: "{{ gitlab_install_path }}/shared/artifacts/"
+    path: "{{ gitlab_install_path | mandatory}}/shared/artifacts/"
     mode: 0751
 
 - name: Change the permissions of the directory where GitLab Pages are stored
   file:
-    path: "{{ gitlab_install_path }}/shared/pages/"
+    path: "{{ gitlab_install_path | mandatory}}/shared/pages/"
     mode: 0771
 
 - name: Place unicorn config 
   template:
     src: templates/unicorn.rb.j2
-    dest: "{{ gitlab_install_path }}/config/unicorn.rb"
+    dest: "{{ gitlab_install_path | mandatory}}/config/unicorn.rb"
   when: gitlab_unicorn_config_path is not defined
 
 - name: Copy unicorn config owner
   copy: 
     src: "{{gitlab_unicorn_config_path}}"
-    dest: "{{ gitlab_install_path }}/config/unicorn.rb"
+    dest: "{{ gitlab_install_path | mandatory}}/config/unicorn.rb"
   when: gitlab_unicorn_config_path is defined
 
 - name: Copy the rack attack config
   copy:
     src: "{{gitlab_rack_attack_config_path}}"
-    dest: "{{ gitlab_install_path }}/config/rack_attack.rb"
+    dest: "{{ gitlab_install_path | mandatory}}/config/rack_attack.rb"
   when: gitlab_rack_attack_config_path is defined
 
 - name: Copy the rack attack config
   copy:
     src: "files/rack_attack.rb"
-    dest: "{{ gitlab_install_path }}/config/rack_attack.rb"
+    dest: "{{ gitlab_install_path | mandatory}}/config/rack_attack.rb"
   when: gitlab_rack_attack_config_path is not defined
 
 - name: Configure Git global settings for git user
@@ -237,32 +151,29 @@
 - name: Place resque config 
   template:
     src: templates/resque.yml.j2
-    dest: "{{ gitlab_install_path }}/config/resque.yml"
+    dest: "{{ gitlab_install_path | mandatory}}/config/resque.yml"
 
 - name: Copy database config
   template:
     src: templates/database.yml.j2
-    dest: "{{ gitlab_install_path }}/config/database.yml"
+    dest: "{{ gitlab_install_path | mandatory}}/config/database.yml"
     owner: git
     mode: 0640
 
 - name: Create Bundler directories
   file:
-    path: "{{ gitlab_install_path }}/.bundle"
+    path: "{{ gitlab_install_path | mandatory}}/{{item}}"
     state: directory
     owner: git
-
-- name: Create Bundler directories
-  file:
-    path: "{{ gitlab_install_path }}/vendor/"
-    state: directory
-    owner: git
+  with_items:
+    - ".bundle"
+    - "vernder/"
 
 - name: Install gems with bundler
   bundler:
     state: present
     deployment_mode: yes
-    gemfile: "{{ gitlab_install_path }}/Gemfile"
+    gemfile: "{{ gitlab_install_path | mandatory}}/Gemfile"
     exclude_groups: 
       - development
       - test
@@ -275,21 +186,21 @@
 - name: Install gitlab shell
   command: "sudo -u git -H bundle exec rake gitlab:shell:install REDIS_URL=unix:{{redis_unixsocket}} RAILS_ENV=production SKIP_STORAGE_VALIDATION=true"
   args:
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
 
 - name: Install gitlab-workhorse
   command: 'sudo -u git -H bundle exec rake "gitlab:workhorse:install[/home/git/gitlab-workhorse]" RAILS_ENV=production'
   args:
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
 
 - name: Initialize database and activate advanced features
   shell:
     cmd: 'yes "yes" | sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD={{gitlab_root_password|mandatory}} GITLAB_ROOT_EMAIL={{gitlab_root_mail|mandatory}}'  
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
   async: 31557600 # Wait up to one year for completion
   poll: 30
 
-- name: Set priviliges on database
+- name: Set privileges on database
   postgresql_privs:
     db: "{{gitlab_db_name}}"
     privs: ALL
@@ -326,58 +237,48 @@
     - gitlab-mailroom.service
     - gitlab-gitaly.service
 
-- name: Enable services
-  systemd:
-    enabled: yes
-    daemon_reload: yes
-    name: "{{item}}"
-  with_items:
-    - gitlab-sidekiq.service
-    - gitlab-unicorn.service
-    - gitlab-workhorse.service
-    - gitlab-mailroom.service
-    - gitlab-gitaly.service
-
 - name: Fetch Gitaly source with git and compile with go
   command: 'sudo -u git -H bundle exec rake "gitlab:gitaly:install[/home/git/gitaly]" RAILS_ENV=production'
   args:
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
 
 - name: Restrict Gitaly socket access
   file:
-    path: "{{ gitlab_install_path }}/tmp/sockets/private"
+    path: "{{ gitlab_install_path | mandatory}}/tmp/sockets/private"
     owner: git
     mode: 0700
 
 - name: Setup Logrotate
   copy:
-    src: "{{ gitlab_install_path }}/lib/support/logrotate/gitlab"
+    src: "{{ gitlab_install_path | mandatory}}/lib/support/logrotate/gitlab"
     dest: /etc/logrotate.d/gitlab
     remote_src: yes
 
 - name: Compile GetText PO files
   command: 'sudo -u git -H bundle exec rake gettext:pack RAILS_ENV=production'
   args:
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
 
 - name: Compile GetText PO files
   command: 'sudo -u git -H bundle exec rake gettext:po_to_json RAILS_ENV=production'
   args:
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
 
 - name: Compile Assets
   command: 'sudo -u git -H yarn install --production --pure-lockfile'
   args:
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
 
 - name: Compile Assets
   command: 'sudo -u git -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production'
   args:
-    chdir: "{{ gitlab_install_path }}"
+    chdir: "{{ gitlab_install_path | mandatory}}"
 
-- name: Start GitLab
+- name: Enable and start GitLab services
   systemd: 
     state: started
+    enabled: yes
+    daemon_reload: yes
     name: "{{item}}"
   with_items:
     - gitlab-sidekiq.service

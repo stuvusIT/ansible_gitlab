@@ -1,0 +1,71 @@
+- name: Add ruby repo
+  apt_repository:
+    repo: 'ppa:brightbox/ruby-ng'
+
+- name: Add yarn gpg repo key
+  apt_key:
+    url: "https://dl.yarnpkg.com/debian/pubkey.gpg"
+
+- name: Add yarn repo
+  apt_repository:
+    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
+
+- name: Add Go repo
+  apt_repository:
+    repo: 'ppa:gophers/archive'
+
+- name: Remove ruby1.8
+  apt:
+    name: ruby1.8
+    state: absent
+
+- name: Add nodejs gpg key
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+
+- name: Add nodejs repositoriy
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_8.x artful main"
+
+- name: Update apt repositories cache
+  apt:
+    update_cache: yes
+  changed_when: false
+
+- name: Install required packages
+  apt:
+    name: "{{item}}"
+  with_items:
+    - sudo
+    - build-essential
+    - fakeroot
+    - dpkg-dev
+    - zlib1g-dev
+    - libyaml-dev
+    - libssl-dev
+    - libgdbm-dev
+    - libre2-dev
+    - libreadline-dev
+    - libncurses5-dev
+    - libffi-dev
+    - curl
+    - openssh-server
+    - checkinstall
+    - libxml2-dev
+    - libxslt-dev
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - logrotate
+    - python-docutils
+    - pkg-config
+    - cmake
+    - software-properties-common
+    - ruby2.4
+    - ruby2.4-dev
+    - nodejs
+    - golang-go
+    - yarn
+    - python-psycopg2
+    - git
+    - libpq-dev
+    - libpq5

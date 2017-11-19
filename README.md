@@ -1,27 +1,148 @@
-# Role Name
+# Gitlab
 
-A brief description of the role goes here.
+This role configures and installs a gitlab instance
 
 
 ## Requirements
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here.
-For instance, if the role uses the EC2 module or depends on other Ansible roles, it may be a good idea to mention in this section that the boto package is required.
+This role depends on postgres, redis and nginx
 
 
 ## Role Variables
-
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role.
-Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
 
 ```yml
 ```
 
 ## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
 ```yml
+---
+- hosts: all
+  become: true
+  vars:
+    nginx_access_log: "/var/log/nginx/gitlab_access.log gitlab_access"
+    nginx_error_log: "/var/log/nginx/gitlab_error.log"
+    nginx_log_format: 
+      |
+        gitlab_access $remote_addr - $remote_user [$time_local] "$request_method $gitlab_filtered_request_uri $server_protocol" $status $body_bytes_sent "$gitlab_filtered_http_referer" "$http_user_agent"
+    upstreams:
+        - name: gitlab-workhorse
+          path: "unix:/home/git/gitlab/tmp/sockets/gitlab-workhorse.socket fail_timeout=0"
+    maps:
+          - condition: $http_upgrade $connection_upgrade_gitlab
+            content:
+            |
+              default upgrade;
+              ''      close
+          - condition: $request_uri $gitlab_temp_request_uri_1
+            content:
+            |
+              default $request_uri;
+              ~(?i)^(?<start>.*)(?<temp>[\?&]private[\-_]token)=[^&]*(?<rest>.*)$ "$start$temp=[FILTERED]$rest"
+          - condition: $gitlab_temp_request_uri_1 $gitlab_temp_request_uri_2
+            content:
+            |
+              default $gitlab_temp_request_uri_1;
+              ~(?i)^(?<start>.*)(?<temp>[\?&]authenticity[\-_]token)=[^&]*(?<rest>.*)$ "$start$temp=[FILTERED]$rest"
+          - condition: $gitlab_temp_request_uri_2 $gitlab_filtered_request_uri
+            content:
+            |
+              default $gitlab_temp_request_uri_2;
+              ~(?i)^(?<start>.*)(?<temp>[\?&]rss[\-_]token)=[^&]*(?<rest>.*)$ "$start$temp=[FILTERED]$rest"
+          - condition: $http_referer $gitlab_filtered_http_referer
+            content:
+            |
+              default $http_referer;
+              ~^(?<temp>.*)\? $temp
+    served_domains:
+      - domains: 
+          - gitlab
+          - git
+        default_server: true
+        allowed_ip_ranges:
+          - 172.27.10.0/24
+        https: false
+        enable_http2: true
+        configurations:
+          - content:
+            |
+              server_tokens off; ## Don't show the nginx version number, a security best practice
+              real_ip_header X-Real-IP; ## X-Real-IP or X-Forwarded-For or proxy_protocol
+              real_ip_recursive off;
+        locations:
+          - condition: /
+            content:
+            |
+              client_max_body_size 0;
+              gzip off;
+
+              ## https://github.com/gitlabhq/gitlabhq/issues/694
+              ## Some requests take more than 30 seconds.
+              proxy_read_timeout      300;
+              proxy_connect_timeout   300;
+              proxy_redirect          off;
+
+              proxy_http_version 1.1;
+
+              proxy_set_header    Host                $http_host;
+              proxy_set_header    X-Real-IP           $remote_addr;
+              proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+              proxy_set_header    X-Forwarded-Proto   $scheme;
+              proxy_set_header    Upgrade             $http_upgrade;
+              proxy_set_header    Connection          $connection_upgrade_gitlab;
+
+              proxy_pass http://gitlab-workhorse;
+          - condition: ~ ^/(404|422|500|502|503)\.html$
+            content:
+            |
+              root /home/git/gitlab/public;
+              internal;
+        
+    gitlab_db_user: gitlab
+    gitlab_db_name: gitlab
+    gitlab_version: ee
+    gitlab_install_path: /home/git/gitlab
+    gitlab_version_number: v10.1.0-ee
+    gitlab_email_from: gitlab@stuvus.uni-stuttgart.de
+    postgres_initdb: /usr/lib/postgresql/9.5/bin/initdb
+    postgres_pg_ctl: /usr/lib/postgresql/9.5/bin/pg_ctl
+    gitlab_root_password: fuckingchangethis
+    gitlab_root_mail: fritz.otlinghaus@stuvus.uni-stuttgart.de
+    gitlab_secret_key: 99d1b9b8517fd8b8c57d41f9687fa9c1099bf85b07961a0ab7adc2d3a7f10406044172626afb18e3fed169b8eb35307d1377d6d2c7063e5f5d0a3d6615302cd3
+    gitlab_ldap_servers:
+      main:
+        label: 'LDAP'
+        host: 'ldaps://ldap01.faveve.uni-stuttgart.de'
+        port: 389
+        uid: 'sAMAccountName'
+        bind_dn: '_the_full_dn_of_the_user_you_will_bind_with'
+        password: '_the_password_of_the_bind_user'
+        encryption: 'plain'
+        verify_certificates: true
+        ca_file: ''
+        ssl_version: ''
+        timeout: 10
+        active_directory: false
+        allow_username_or_email_login: false
+        block_auto_created_users: false
+        base: ''
+        user_filter: ''
+        group_base: ''
+        admin_group: ''
+        external_groups: []
+        sync_ssh_keys: false
+        attributes:
+          username: ['uid', 'userid', 'sAMAccountName']
+          email:    ['mail', 'email', 'userPrincipalName']
+          name:       'cn'
+          first_name: 'givenName'
+          last_name:  'sn'
+  roles:
+    - redis
+    - postgresql
+    - gitlab
+    - nginx
+
 ```
 
 ## License
@@ -31,4 +152,4 @@ This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 Inter
 
 ## Author Information
 
- * [Author Name (nickname)](github profile) _your-full-stuvus-email-address@stuvus.uni-stuttgart.de_
+ * [Fritz Otlinghaus (Scriptkiddi)](https://github.com/scriptkiddi) _fritz.otlinghaus@stuvus.uni-stuttgart.de_
