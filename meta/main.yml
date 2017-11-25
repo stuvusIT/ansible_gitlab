@@ -20,7 +20,7 @@ galaxy_info:
     - gitlab
     - git
 
-dependencies: []
-# postgres
-# redis-server
-# nginx
+dependencies:
+  - { role: stuvusIT.postgresql }
+  - { role: stuvusIT.redis }
+  - { role: stuvusIT.nginx }
