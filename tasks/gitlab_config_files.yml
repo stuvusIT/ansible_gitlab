@@ -13,15 +13,8 @@
 
 - name: Copy the rack attack config
   copy:
-    src: "{{ gitlab_rack_attack_config_path }}"
+    src: "{{ gitlab_rack_attack_config_path | default('files/rack_attack.rb')}}"
     dest: "{{ gitlab_install_path | mandatory }}/config/rack_attack.rb"
-  when: gitlab_rack_attack_config_path is defined
-
-- name: Copy the rack attack config
-  copy:
-    src: "files/rack_attack.rb"
-    dest: "{{ gitlab_install_path | mandatory }}/config/rack_attack.rb"
-  when: gitlab_rack_attack_config_path is not defined
 
 - name: Place resque config 
   template:

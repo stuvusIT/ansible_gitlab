@@ -1,9 +1,3 @@
 # {{ ansible_managed }}
-development:
-  url: unix:{{ redis_unixsocket }}
-
-test:
-  url: unix:{{ redis_unixsocket }}
 production:
-  # Redis (single instance)
   url: unix:{{ redis_unixsocket }}
