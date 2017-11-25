@@ -1,0 +1,18 @@
+- name: "Create database user {{ gitlab_db_user }}"
+  postgresql_user:
+    login_host: "{{ postgres_run_directory }}"
+    name: "{{ gitlab_db_user }}"
+    role_attr_flags: CREATEDB
+
+- name: "Create GitLab database: {{ gitlab_db_name }}"
+  postgresql_db:
+      login_host: "{{ postgres_run_directory }}"
+      name: "{{ gitlab_db_name|mandatory }}"
+      owner: "{{ gitlab_db_user|mandatory }}"
+      login_user: "{{ gitlab_db_user }}"
+
+- name: "Create pg_tgrm extension"
+  postgresql_ext:
+      login_host: "{{ postgres_run_directory }}"
+      name: pg_trgm
+      db: "{{ gitlab_db_name }}"

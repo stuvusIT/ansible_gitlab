@@ -1,9 +1,9 @@
-# {{ansible_managed}}
+# {{ ansible_managed }}
 production:
   adapter: postgresql
   encoding: unicode
-  database: {{gitlab_db_name}}
-  pool: {{gitlab_db_pool}}
-  username: {{gitlab_db_user}}
+  database: {{ gitlab_db_name }}
+  pool: {{ gitlab_db_pool }}
+  username: {{ gitlab_db_user }}
   host: 'localhost'
-  socket: {{postgres_unix_socket_directories}}
+  socket: {{ postgres_unix_socket_directories }}

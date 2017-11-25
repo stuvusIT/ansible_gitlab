@@ -1,21 +1,21 @@
-# {{ansible_managed}}
+# {{ ansible_managed }}
 
 worker_processes {{ gitlab_unicorn_worker_processes }}
 
 working_directory "{{ gitlab_unicorn_working_directory }}" # available in 0.94.0+
 
 {% for item in gitlab_unicorn_listen %}
-listen {{item}}
+listen {{ item }}
 {% endfor %}
-timeout {{gitlab_unicorn_timeout}}
-pid "{{gitlab_unicorn_pid}}"
-stderr_path "{{gitlab_unicorn_stderr_path}}"
-stdout_path "{{gitlab_unicorn_stdout_path}}"
-preload_app {{gitlab_unicorn_preload_app}}
+timeout {{ gitlab_unicorn_timeout }}
+pid "{{ gitlab_unicorn_pid }}"
+stderr_path "{{ gitlab_unicorn_stderr_path }}"
+stdout_path "{{ gitlab_unicorn_stdout_path }}"
+preload_app {{ gitlab_unicorn_preload_app }}
 GC.respond_to?(:copy_on_write_friendly=) and
   GC.copy_on_write_friendly = true
 
-check_client_connection {{gitlab_unicorn_check_client_connection}}
+check_client_connection {{ gitlab_unicorn_check_client_connection }}
 
 before_fork do |server, worker|
   defined?(ActiveRecord::Base) and
