@@ -10,8 +10,26 @@ This role depends on postgres, redis and nginx
 
 ## Role Variables
 
-```yml
-```
+| Variable                           | Default / Mandatory                              | Description                                                                                                                                                     |
+|------------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| gitlab_host                   | `localhost`                                   | URL where gitlab is running. |
+| gitlab_port | `80` | Default port where gitlab ist listening |
+| gitlab_https | `false` | Enable/disable https. |
+| gitlab_display_name | `GitLab` | Display name. |
+| gitlab_email_reply_to | `noreply@example.com` | What email address should gitlab use |
+| gitlab_email_subject_suffix | ` ` | Suffix for email subjects |
+| gitlab_default_can_create_group | `true` | Can a user create a group |
+| gitlab_username_changing_enabled | `true` | Can a user change his username |
+| gitlab_issue_closing_pattern | | What words close a ticket when used in a commit message |
+| gitlab_default_projects_features_issues | `true` | Set a if a project has an issue section on creation |
+| gitlab_default_projects_features_merge_requests | `true` | Sets if a project has an merge request section on creation |
+| gitlab_default_projects_features_wiki | `true` | Sets if a project has a wiki section on creation |
+| gitlab_default_projects_features_snippets | `true` | Sets if a project has a snippets section on creation |
+| gitlab_default_projects_features_builds | `true` | Sets if a project has a builds section on creation |
+| gitlab_default_projects_features_container_registry | `true` | Sets if a project has a container registry section on creation |
+| gitlab_webhook_timeout | `10` | Seconds till a webhook timesout |
+| gitlab_repository_downloads_path | `shared/cache/archive/` | Default paths to search for downloadble files|
+
 
 ## Example Playbook
 
