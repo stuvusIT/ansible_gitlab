@@ -1,14 +1,16 @@
 # Gitlab
 
-This role configures and installs a gitlab instance
+This role configures and installs a gitlab instance.
 
 
 ## Requirements
 
-This role depends on postgres, redis and nginx
-
+This role depends on (postgres)[https://github.com/stuvusIT/postgresql], (redis)[https://github.com/stuvusIT/redis] and (nginx)[https://github.com/stuvusIT/nginx]
 
 ## Role Variables
+
+Since Gitlab is higly configureable see the (gitlab example config file)[https://gitlab.com/gitlab-org/gitlab-ce/raw/f441fe7b548fd9cb87eb2f0eadfa88b2e312b692/config/gitlab.yml.example] 
+All variable names are gitlab_*. See below for some examples.
 
 | Variable                           | Default / Mandatory                              | Description                                                                                                                                                     |
 |------------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
