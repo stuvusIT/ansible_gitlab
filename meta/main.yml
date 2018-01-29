@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Fritz Otlinghaus
   description: Installs and configures a gitlab instance
@@ -10,17 +11,14 @@ galaxy_info:
   platforms:
     - name: Ubuntu
       versions:
+        - xenial
         - yakkety
-    - name: Debian
-      versions:
-        - jessie
+        - zesty
+        - artful
 
   galaxy_tags:
     - stuvus
     - gitlab
     - git
 
-dependencies:
-  - { role: stuvusIT.postgresql }
-  - { role: stuvusIT.redis }
-  - { role: stuvusIT.nginx }
+dependencies: []

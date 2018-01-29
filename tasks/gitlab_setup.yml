@@ -1,5 +1,5 @@
 ---
-- name: Clone gitlab to {{ gitlab_install_path }}
+- name: Clone GitLab to {{ gitlab_install_path }}
   git:
     depth: 1
     repo: https://gitlab.com/gitlab-org/gitlab-{{ gitlab_version }}.git
@@ -22,6 +22,8 @@
     name: gc.auto
     scope: global
     value: 0
+  become: yes
+  become_user: "{{ gitlab_user }}"
 
 - name: Enable packfile bitmaps
   git_config:
@@ -36,7 +38,7 @@
     owner: git
   with_items:
     - ".bundle"
-    - "vernder/"
+    - "vendor/"
 
 - name: Install gems with bundler
   bundler:
@@ -52,12 +54,12 @@
   become: yes
   become_user: git
 
-- name: Install gitlab shell
+- name: Install GitLab shell
   command: "sudo -u git -H bundle exec rake gitlab:shell:install REDIS_URL=unix:{{ redis_unixsocket }} RAILS_ENV=production SKIP_STORAGE_VALIDATION=true"
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"
 
-- name: Install gitlab-workhorse
+- name: Install GitLab-workhorse
   command: 'sudo -u git -H bundle exec rake "gitlab:workhorse:install[/home/git/gitlab-workhorse]" RAILS_ENV=production'
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"

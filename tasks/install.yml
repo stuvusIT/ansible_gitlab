@@ -1,8 +1,7 @@
 ---
 - import_tasks: apt_install.yml
-  when: ansible_pkg_mgr == "apt"
 
-- name: Add gitlab user
+- name: Add GitLab user
   user:
       name: git
       shell: /bin/nologin
@@ -45,17 +44,17 @@
     dest: /etc/logrotate.d/gitlab
     remote_src: yes
 
-- name: Compile GetText PO files
+- name: Compile gettext PO files
   command: 'sudo -u git -H bundle exec rake gettext:pack RAILS_ENV=production'
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"
 
-- name: Compile GetText PO files
+- name: Compile gettext PO files
   command: 'sudo -u git -H bundle exec rake gettext:po_to_json RAILS_ENV=production'
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"
 
-- name: Compile Assets
+- name: Run yarn install
   command: 'sudo -u git -H yarn install --production --pure-lockfile'
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"

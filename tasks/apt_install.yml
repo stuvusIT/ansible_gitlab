@@ -1,31 +1,24 @@
-- name: Add ruby repo
-  apt_repository:
-    repo: 'ppa:brightbox/ruby-ng'
 
-- name: Add yarn gpg repo key
+- name: Add gpg repo keys
   apt_key:
-    url: "https://dl.yarnpkg.com/debian/pubkey.gpg"
+    url: "{{ item }}"
+  with_items:
+    - "https://dl.yarnpkg.com/debian/pubkey.gpg"
+    - "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
 
-- name: Add yarn repo
+- name: Add repos
   apt_repository:
-    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
-
-- name: Add Go repo
-  apt_repository:
-    repo: 'ppa:gophers/archive'
+    repo: "{{ item }}"
+  with_items:
+    - "ppa:brightbox/ruby-ng"
+    - "deb https://dl.yarnpkg.com/debian/ stable main"
+    - "ppa:gophers/archive"
+    - "deb https://deb.nodesource.com/node_8.x artful main"
 
 - name: Remove ruby1.8
   apt:
     name: ruby1.8
     state: absent
-
-- name: Add nodejs gpg key
-  apt_key:
-    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-
-- name: Add nodejs repositoriy
-  apt_repository:
-    repo: "deb https://deb.nodesource.com/node_8.x artful main"
 
 - name: Update apt repositories cache
   apt:

@@ -1,37 +1,42 @@
-# Gitlab
+# gitlab
 
-This role configures and installs a gitlab instance.
+This role configures and installs a GitLab instance.
 
 
 ## Requirements
 
-This role depends on (postgres)[https://github.com/stuvusIT/postgresql], (redis)[https://github.com/stuvusIT/redis] and (nginx)[https://github.com/stuvusIT/nginx]
+This role depends on (postgres)[https://github.com/stuvusIT/postgresql], (redis)[https://github.com/stuvusIT/redis] , (nginx)[https://github.com/stuvusIT/nginx] and Ubuntu
 
 ## Role Variables
 
 Since Gitlab is higly configureable see the (gitlab example config file)[https://gitlab.com/gitlab-org/gitlab-ce/raw/f441fe7b548fd9cb87eb2f0eadfa88b2e312b692/config/gitlab.yml.example] 
 All variable names are gitlab_*. See below for some examples.
 
-| Variable                           | Default / Mandatory                              | Description                                                                                                                                                     |
-|------------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| gitlab_host                   | `localhost`                                   | URL where gitlab is running. |
-| gitlab_port | `80` | Default port where gitlab ist listening |
-| gitlab_https | `false` | Enable/disable https. |
-| gitlab_display_name | `GitLab` | Display name. |
-| gitlab_email_reply_to | `noreply@example.com` | What email address should gitlab use |
-| gitlab_email_subject_suffix | ` ` | Suffix for email subjects |
-| gitlab_default_can_create_group | `true` | Can a user create a group |
-| gitlab_username_changing_enabled | `true` | Can a user change his username |
-| gitlab_issue_closing_pattern | | What words close a ticket when used in a commit message |
-| gitlab_default_projects_features_issues | `true` | Set a if a project has an issue section on creation |
-| gitlab_default_projects_features_merge_requests | `true` | Sets if a project has an merge request section on creation |
-| gitlab_default_projects_features_wiki | `true` | Sets if a project has a wiki section on creation |
-| gitlab_default_projects_features_snippets | `true` | Sets if a project has a snippets section on creation |
-| gitlab_default_projects_features_builds | `true` | Sets if a project has a builds section on creation |
-| gitlab_default_projects_features_container_registry | `true` | Sets if a project has a container registry section on creation |
-| gitlab_webhook_timeout | `10` | Seconds till a webhook timesout |
-| gitlab_repository_downloads_path | `shared/cache/archive/` | Default paths to search for downloadble files|
+| Variable                                              | Default / Mandatory     | Description                                                    |
+|-------------------------------------------------------|-------------------------|----------------------------------------------------------------|
+| `gitlab_host`                                         | `localhost`             | URL where gitlab is running                                    |
+| `gitlab_port`                                         | `80`                    | Default port where gitlab ist listening                        |
+| `gitlab_https`                                        | `false`                 | Enable/disable https                                           |
+| `gitlab_display_name`                                 | `GitLab`                | Display name                                                   |
+| `gitlab_email_reply_to`                               | `noreply@example.com`   | What email address should gitlab use                           |
+| `gitlab_email_subject_suffix`                         | ` `                     | Suffix for email subjects                                      |
+| `gitlab_default_can_create_group`                     | `true`                  | Enable users to create groups                                  |
+| `gitlab_username_changing_enabled`                    | `true`                  | Enable users to change their username                          |
+| `gitlab_issue_closing_pattern`                        |                         | What words close a ticket when used in a commit message        |
+| `gitlab_default_projects_features_issues`             | `true`                  | Set a if a project has an issue section on creation            |
+| `gitlab_default_projects_features_merge_requests`     | `true`                  | Sets if a project has an merge request section on creation     |
+| `gitlab_default_projects_features_wiki`               | `true`                  | Sets if a project has a wiki section on creation               |
+| `gitlab_default_projects_features_snippets`           | `true`                  | Sets if a project has a snippets section on creation           |
+| `gitlab_default_projects_features_builds`             | `true`                  | Sets if a project has a builds section on creation             |
+| `gitlab_default_projects_features_container_registry` | `true`                  | Sets if a project has a container registry section on creation |
+| `gitlab_webhook_timeout`                              | `10`                    | Seconds till a webhook timesout                                |
+| `gitlab_repository_downloads_path`                    | `shared/cache/archive/` | Default paths to search for downloadble files                  |
 
+## Role vars
+
+| Variable                                              | Default / Mandatory     | Description                                                    |
+|-------------------------------------------------------|-------------------------|----------------------------------------------------------------|
+| `gitlab_rack_attack_config_path`                                         | `files/rack_attack.rb`             | Path to the rack attack config |
 
 ## Example Playbook
 

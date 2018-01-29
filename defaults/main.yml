@@ -120,5 +120,5 @@ gitlab_unicorn_listen:
   - '"/home/git/gitlab/tmp/sockets/gitlab.socket", :backlog => 1024'
   - '"127.0.0.1:8080", :tcp_nopush => true'
 gitlab_db_pool: 10
-
+gitlab_rack_attack_config_path: "files/rack_attack.rb"
 
