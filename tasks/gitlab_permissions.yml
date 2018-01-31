@@ -21,23 +21,23 @@
   file:
     path: "{{ gitlab_install_path | mandatory }}/log"
     owner: git
-    mode: 0751
+    mode: 0750
 
 - name: Set owner of tmp directory
   file:
     path: "{{ gitlab_install_path | mandatory }}/tmp"
     owner: git
-    mode: 0751
+    mode: 0750
 
 - name: Set permission on tmp/pids
   file:
     path: "{{ gitlab_install_path | mandatory }}/tmp/pids"
-    mode: 0751
+    mode: 0750
 
 - name: Set permission on tmp/sockets
   file:
     path: "{{ gitlab_install_path | mandatory }}/tmp/sockets"
-    mode: 0751
+    mode: 0750
 
 - name: Create public/uploads/ directory
   file:
@@ -49,14 +49,14 @@
 - name: Change the permissions of the directory where CI job traces are stored
   file:
     path: "{{ gitlab_install_path | mandatory }}/builds"
-    mode: 0751
+    mode: 0750
 
 - name: Change the permissions of the directory where CI artifacts are stored
   file:
     path: "{{ gitlab_install_path | mandatory }}/shared/artifacts/"
-    mode: 0751
+    mode: 0750
 
 - name: Change the permissions of the directory where GitLab Pages are stored
   file:
     path: "{{ gitlab_install_path | mandatory }}/shared/pages/"
-    mode: 0771
+    mode: 0770

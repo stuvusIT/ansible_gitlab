@@ -34,9 +34,10 @@ All variable names are gitlab_*. See below for some examples.
 
 ## Role vars
 
-| Variable                                              | Default / Mandatory     | Description                                                    |
-|-------------------------------------------------------|-------------------------|----------------------------------------------------------------|
-| `gitlab_rack_attack_config_path`                                         | `files/rack_attack.rb`             | Path to the rack attack config |
+| Variable                         | Default / Mandatory    | Description                    |
+|----------------------------------|------------------------|--------------------------------|
+| `gitlab_rack_attack_config_path` | `files/rack_attack.rb` | Path to the rack attack config |
+| `gitlab_postgressql_host`        | ` `            | Host where postgresql runs, when set gitlab will not use the socket directive.    |
 
 ## Example Playbook
 

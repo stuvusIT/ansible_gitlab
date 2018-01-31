@@ -30,6 +30,8 @@
     name: repack.writeBitmaps
     scope: global
     value: true
+  become: yes
+  become_user: "{{ gitlab_user }}"
 
 - name: Create Bundler directories
   file:
@@ -66,9 +68,9 @@
 
 - name: Initialize database and activate advanced features
   shell:
-    cmd: 'yes "yes" | sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD={{ gitlab_root_password | mandatory }} GITLAB_ROOT_EMAIL={{ gitlab_root_mail | mandatory }}'  
+    cmd: 'yes "yes" | sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD={{ gitlab_root_password | mandatory }} GITLAB_ROOT_EMAIL={{ gitlab_root_mail | mandatory }}'
     chdir: "{{ gitlab_install_path | mandatory }}"
-  async: 31557600 # Wait up to one year for completion
+  async: 31557600 # Increase timeout for this task because it takes a while
   poll: 30
 
 - name: Set privileges on database
@@ -96,3 +98,4 @@
     objs: ALL_IN_SCHEMA
     role: "{{ gitlab_db_user }}"
     unix_socket: "{{ postgres_run_directory }}"
+

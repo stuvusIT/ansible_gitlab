@@ -3,11 +3,12 @@
 
 - name: Add GitLab user
   user:
-      name: git
-      shell: /bin/nologin
-      comment: 'GitLab'
-      state: present
-      groups: redis
+    name: git
+    shell: /bin/nologin
+    comment: 'GitLab'
+    state: present
+    groups: redis
+    system: True
 
 - name: Install bundler gem
   gem:
@@ -17,7 +18,7 @@
 
 - import_tasks: postgres_install.yml
 
-- name: Creates redis socket directory
+- name: Create Redis socket directory
   file:
     path: "{{ redis_unixsocket | dirname }}"
     state: directory
@@ -38,7 +39,7 @@
     owner: git
     mode: 0700
 
-- name: Setup Logrotate
+- name: Setup logrotate
   copy:
     src: "{{ gitlab_install_path | mandatory }}/lib/support/logrotate/gitlab"
     dest: /etc/logrotate.d/gitlab
