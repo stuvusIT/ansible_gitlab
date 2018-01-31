@@ -5,7 +5,7 @@
     owner: git
     recurse: yes
 
-- name: Place gitlab config
+- name: Place GitLab config
   template: 
     src: templates/gitlab.yml.j2
     dest: "{{ gitlab_install_path | mandatory }}/config/gitlab.yml"

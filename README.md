@@ -1,5 +1,4 @@
 # gitlab
-
 This role configures and installs a GitLab instance.
 
 
@@ -138,7 +137,7 @@ All variable names are gitlab_*. See below for some examples.
     gitlab_ldap_servers:
       main:
         label: 'LDAP'
-        host: 'ldaps://ldap01.faveve.uni-stuttgart.de'
+        host: 'ldaps://ldap.example.com'
         port: 389
         uid: 'sAMAccountName'
         bind_dn: '_the_full_dn_of_the_user_you_will_bind_with'
