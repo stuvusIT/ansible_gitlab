@@ -17,17 +17,33 @@
     mode: 0600
     owner: git
 
-- name: Set owner of log directory
+- name: Create log directory
   file:
-    path: "{{ gitlab_install_path | mandatory }}/log"
+    path: "/var/log/gitlab"
     owner: git
     mode: 0750
+    state: directory
 
-- name: Set owner of tmp directory
+- name: Link log directory
   file:
-    path: "{{ gitlab_install_path | mandatory }}/tmp"
+    src: /var/log/gitlab
+    dest: "{{ gitlab_install_path | mandatory }}/log"
+    state: link
+    owner: git
+
+- name: Create tmp directory
+  file:
+    path: "/tmp/gitlab"
     owner: git
     mode: 0750
+    state: directory
+
+- name: Link tmp directory
+  file:
+    src: /tmp/gitlab
+    dest: "{{ gitlab_install_path | mandatory }}/tmp"
+    state: link
+    owner: git
 
 - name: Set permission on tmp/pids
   file:
