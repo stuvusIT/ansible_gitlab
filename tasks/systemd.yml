@@ -9,5 +9,5 @@
     - gitlab-workhorse.service
     - gitlab-mailroom.service
     - gitlab-gitaly.service
-  notify: Enable and start GitlLab services
+  notify: Enable and start GitLab services
 

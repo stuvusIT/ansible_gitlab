@@ -22,7 +22,6 @@
     name: gc.auto
     scope: global
     value: 0
-  become: yes
   become_user: "{{ gitlab_user }}"
 
 - name: Enable packfile bitmaps
@@ -30,7 +29,6 @@
     name: repack.writeBitmaps
     scope: global
     value: true
-  become: yes
   become_user: "{{ gitlab_user }}"
 
 - name: Create Bundler directories
@@ -53,7 +51,6 @@
       - aws
       - mysql
       - kerberos
-  become: yes
   become_user: git
 
 - name: Install GitLab shell
