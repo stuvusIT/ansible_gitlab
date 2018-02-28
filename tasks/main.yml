@@ -1,2 +1,3 @@
 ---
-# tasks file for .
+ - import_tasks: install.yml
+

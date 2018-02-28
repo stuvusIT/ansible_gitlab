@@ -1,0 +1,4 @@
+---
+redis_unixsocket: /var/run/redis/redis.sock
+redis_unixsocketperm: 770
+redis_port: 0

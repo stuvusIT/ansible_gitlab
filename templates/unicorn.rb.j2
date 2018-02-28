@@ -1,0 +1,38 @@
+# {{ ansible_managed }}
+
+worker_processes {{ gitlab_unicorn_worker_processes }}
+
+working_directory "{{ gitlab_unicorn_working_directory }}" # available in 0.94.0+
+
+{% for item in gitlab_unicorn_listen %}
+listen {{ item }}
+{% endfor %}
+timeout {{ gitlab_unicorn_timeout }}
+pid "{{ gitlab_unicorn_pid }}"
+stderr_path "{{ gitlab_unicorn_stderr_path }}"
+stdout_path "{{ gitlab_unicorn_stdout_path }}"
+preload_app {{ gitlab_unicorn_preload_app }}
+GC.respond_to?(:copy_on_write_friendly=) and
+  GC.copy_on_write_friendly = true
+
+check_client_connection {{ gitlab_unicorn_check_client_connection }}
+
+before_fork do |server, worker|
+  defined?(ActiveRecord::Base) and
+    ActiveRecord::Base.connection.disconnect!
+  old_pid = "#{server.config[:pid]}.oldbin"
+  if old_pid != server.pid
+    begin
+      sig = (worker.nr + 1) >= server.worker_processes ? :QUIT : :TTOU
+      Process.kill(sig, File.read(old_pid).to_i)
+    rescue Errno::ENOENT, Errno::ESRCH
+    end
+  end
+end
+
+after_fork do |server, worker|
+  defined?(ActiveRecord::Base) and
+    ActiveRecord::Base.establish_connection
+  defined?(::Prometheus::Client.reinitialize_on_pid_change) &&
+    Prometheus::Client.reinitialize_on_pid_change
+end

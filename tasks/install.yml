@@ -1,0 +1,68 @@
+---
+- import_tasks: apt_install.yml
+
+- name: Add GitLab user
+  user:
+    name: git
+    shell: /bin/nologin
+    comment: 'GitLab'
+    state: present
+    groups: redis
+    system: True
+
+- name: Install bundler gem
+  gem:
+    name: bundler
+  become: yes
+  become_user: git
+
+- import_tasks: postgres_install.yml
+
+- name: Create Redis socket directory
+  file:
+    path: "{{ redis_unixsocket | dirname }}"
+    state: directory
+    owner: redis
+    group: redis
+    mode: 0755
+
+- import_tasks: gitlab_setup.yml
+
+- name: Fetch Gitaly source with git and compile with go
+  command: 'sudo -u git -H bundle exec rake "gitlab:gitaly:install[/home/git/gitaly]" RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path | mandatory }}"
+
+- name: Restrict Gitaly socket access
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/tmp/sockets/private"
+    owner: git
+    mode: 0700
+
+- name: Setup logrotate
+  copy:
+    src: "{{ gitlab_install_path | mandatory }}/lib/support/logrotate/gitlab"
+    dest: /etc/logrotate.d/gitlab
+    remote_src: yes
+
+- name: Compile gettext PO files
+  command: 'sudo -u git -H bundle exec rake gettext:pack RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path | mandatory }}"
+
+- name: Compile gettext PO files
+  command: 'sudo -u git -H bundle exec rake gettext:po_to_json RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path | mandatory }}"
+
+- name: Run yarn install
+  command: 'sudo -u git -H yarn install --production --pure-lockfile'
+  args:
+    chdir: "{{ gitlab_install_path | mandatory }}"
+
+- name: Compile Assets
+  command: 'sudo -u git -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path | mandatory }}"
+
+- import_tasks: systemd.yml

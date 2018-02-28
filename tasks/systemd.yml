@@ -1,0 +1,13 @@
+---
+- name: Download systemd service files from gitlab
+  get_url:
+    url:  "https://gitlab.com/gitlab-org/gitlab-recipes/raw/master/init/systemd/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - gitlab-sidekiq.service
+    - gitlab-unicorn.service
+    - gitlab-workhorse.service
+    - gitlab-mailroom.service
+    - gitlab-gitaly.service
+  notify: Enable and start GitLab services
+

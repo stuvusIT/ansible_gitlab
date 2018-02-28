@@ -1,0 +1,78 @@
+---
+- name: "Set owner of gitlab directory {{ gitlab_install_path }}"
+  file:
+    path: "{{ gitlab_install_path | mandatory }}"
+    owner: git
+    recurse: yes
+
+- name: Place GitLab config
+  template: 
+    src: templates/gitlab.yml.j2
+    dest: "{{ gitlab_install_path | mandatory }}/config/gitlab.yml"
+
+- name: Copy secrets file
+  template:
+    src: templates/secrets.yml.j2
+    dest: "{{ gitlab_install_path | mandatory }}/config/secrets.yml"
+    mode: 0600
+    owner: git
+
+- name: Create log directory
+  file:
+    path: "/var/log/gitlab"
+    owner: git
+    mode: 0750
+    state: directory
+
+- name: Link log directory
+  file:
+    src: /var/log/gitlab
+    dest: "{{ gitlab_install_path | mandatory }}/log"
+    state: link
+    owner: git
+
+- name: Create tmp directory
+  file:
+    path: "/tmp/gitlab"
+    owner: git
+    mode: 0750
+    state: directory
+
+- name: Link tmp directory
+  file:
+    src: /tmp/gitlab
+    dest: "{{ gitlab_install_path | mandatory }}/tmp"
+    state: link
+    owner: git
+
+- name: Set permission on tmp/pids
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/tmp/pids"
+    mode: 0750
+
+- name: Set permission on tmp/sockets
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/tmp/sockets"
+    mode: 0750
+
+- name: Create public/uploads/ directory
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/public/uploads"
+    state: directory
+    owner: git
+    mode: 0700
+
+- name: Change the permissions of the directory where CI job traces are stored
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/builds"
+    mode: 0750
+
+- name: Change the permissions of the directory where CI artifacts are stored
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/shared/artifacts/"
+    mode: 0750
+
+- name: Change the permissions of the directory where GitLab Pages are stored
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/shared/pages/"
+    mode: 0770
