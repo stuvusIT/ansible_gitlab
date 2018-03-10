@@ -1,3 +1,7 @@
+---
+- name: Install apt-transport-https
+  apt:
+    name: apt-transport-https
 
 - name: Add gpg repo keys
   apt_key:
@@ -12,8 +16,8 @@
   with_items:
     - "ppa:brightbox/ruby-ng"
     - "deb https://dl.yarnpkg.com/debian/ stable main"
-    - "ppa:gophers/archive"
     - "deb https://deb.nodesource.com/node_8.x artful main"
+    - "ppa:longsleep/golang-backports"
 
 - name: Remove ruby1.8
   apt:
@@ -29,6 +33,7 @@
   apt:
     name: "{{ item }}"
   with_items:
+    - python-psycopg2
     - sudo
     - build-essential
     - fakeroot
@@ -62,3 +67,4 @@
     - git
     - libpq-dev
     - libpq5
+

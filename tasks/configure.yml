@@ -1,0 +1,9 @@
+---
+- name: Install bundler gem
+  gem:
+    name: bundler
+  become_user: git
+
+- import_tasks: gitlab_permissions.yml
+
+- import_tasks: gitlab_config_files.yml

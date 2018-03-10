@@ -2,7 +2,7 @@
   postgresql_user:
     login_host: "{{ postgres_run_directory }}"
     name: "{{ gitlab_db_user }}"
-    role_attr_flags: CREATEDB
+    role_attr_flags: CREATEDB,SUPERUSER
 
 - name: "Create GitLab database: {{ gitlab_db_name }}"
   postgresql_db:

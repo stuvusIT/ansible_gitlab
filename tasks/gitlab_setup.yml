@@ -1,5 +1,5 @@
 ---
-- name: Clone GitLab to {{ gitlab_install_path }}
+- name: "Clone GitLab to {{ gitlab_install_path }}"
   git:
     depth: 1
     repo: https://gitlab.com/gitlab-org/gitlab-{{ gitlab_version }}.git
@@ -72,7 +72,7 @@
 
 - name: Set privileges on database
   postgresql_privs:
-    db: "{{ gitlab_db_name }"
+    db: "{{ gitlab_db_name }}"
     privs: ALL
     type: database
     role: "{{ gitlab_db_user }}"
