@@ -41,6 +41,118 @@ To see all GitLab options see the [GitLab example config file](https://gitlab.co
 
 ```yml
 ---
+gitlab_db_name: gitlab
+gitlab_db_user: gitlab
+gitlab_user: git
+gitlab_version: ee
+gitlab_install_path: /home/git/gitlab
+gitlab_version_number: v10.5.4-ee
+postgres_initdb: /usr/lib/postgresql/9.5/bin/initdb
+postgres_pg_ctl: /usr/lib/postgresql/9.5/bin/pg_ctl
+gitlab_root_password: passwords
+gitlab_root_mail: root@gitlab.example.com
+gitlab_config:
+  production: &base
+    gitlab:
+      host: localhost
+      port: 80
+      https: false
+      email_from: gitlab@example.com
+      email_display_name: GitLab
+gitlab_database_config:
+  production:
+    adapter: postgresql
+    encoding: unicode
+    database: "{{ gitlab_db_name }}"
+    pool: 10
+    username: "{{ gitlab_db_user }}"
+    host: localhost
+    socket: /var/run/postgresql
+gitlab_resque_config:
+  production:
+    url: "unix:{{ redis_unixsocket }}"
+gitlab_secret_config:
+  production:
+    db_key_base: mysecretkey
+    secret_key_base: mysecretkey2
+
+nginx_access_log: "/var/log/nginx/gitlab_access.log gitlab_access"
+nginx_error_log: "/var/log/nginx/gitlab_error.log"
+nginx_log_format: 
+  |
+    gitlab_access $remote_addr - $remote_user [$time_local] "$request_method $gitlab_filtered_request_uri $server_protocol" $status $body_bytes_sent "$gitlab_filtered_http_referer" "$http_user_agent"
+upstreams:
+    - name: gitlab-workhorse
+      path: "unix:/home/git/gitlab/tmp/sockets/gitlab-workhorse.socket fail_timeout=0"
+maps:
+      - condition: $http_upgrade $connection_upgrade_gitlab
+        content:
+        |
+          default upgrade;
+          ''      close
+      - condition: $request_uri $gitlab_temp_request_uri_1
+        content:
+        |
+          default $request_uri;
+          ~(?i)^(?<start>.*)(?<temp>[\?&]private[\-_]token)=[^&]*(?<rest>.*)$ "$start$temp=[FILTERED]$rest"
+      - condition: $gitlab_temp_request_uri_1 $gitlab_temp_request_uri_2
+        content:
+        |
+          default $gitlab_temp_request_uri_1;
+          ~(?i)^(?<start>.*)(?<temp>[\?&]authenticity[\-_]token)=[^&]*(?<rest>.*)$ "$start$temp=[FILTERED]$rest"
+      - condition: $gitlab_temp_request_uri_2 $gitlab_filtered_request_uri
+        content:
+        |
+          default $gitlab_temp_request_uri_2;
+          ~(?i)^(?<start>.*)(?<temp>[\?&]rss[\-_]token)=[^&]*(?<rest>.*)$ "$start$temp=[FILTERED]$rest"
+      - condition: $http_referer $gitlab_filtered_http_referer
+        content:
+        |
+          default $http_referer;
+          ~^(?<temp>.*)\? $temp
+served_domains:
+  - domains: 
+      - gitlab
+      - git
+    default_server: true
+    allowed_ip_ranges:
+      - 172.27.10.0/24
+    https: false
+    enable_http2: true
+    configurations:
+      - content:
+        |
+          server_tokens off; ## Don't show the nginx version number, a security best practice
+          real_ip_header X-Real-IP; ## X-Real-IP or X-Forwarded-For or proxy_protocol
+          real_ip_recursive off;
+    locations:
+      - condition: /
+        content:
+        |
+          client_max_body_size 0;
+          gzip off;
+
+          ## https://github.com/gitlabhq/gitlabhq/issues/694
+          ## Some requests take more than 30 seconds.
+          proxy_read_timeout      300;
+          proxy_connect_timeout   300;
+          proxy_redirect          off;
+
+          proxy_http_version 1.1;
+
+          proxy_set_header    Host                $http_host;
+          proxy_set_header    X-Real-IP           $remote_addr;
+          proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+          proxy_set_header    X-Forwarded-Proto   $scheme;
+          proxy_set_header    Upgrade             $http_upgrade;
+          proxy_set_header    Connection          $connection_upgrade_gitlab;
+
+          proxy_pass http://gitlab-workhorse;
+      - condition: ~ ^/(404|422|500|502|503)\.html$
+        content:
+        |
+          root /home/git/gitlab/public;
+          internal;
 
 ```
 
