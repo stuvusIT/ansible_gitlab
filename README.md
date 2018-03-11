@@ -8,9 +8,9 @@ This role depends on (postgres)[https://github.com/stuvusIT/postgresql], (redis)
 
 ## Role Variables
 
-To enable a variable config for gitlab and since GitLab is also using yaml files you can pretty much write your GitLab config into this role, 
+To enable a variable config for gitlab and since GitLab is also using yaml files you can pretty much write your GitLab config into this role,
 with the exception that we merge the given config with the default options of GitLab.
-To see all GitLab options see the [GitLab example config file](https://gitlab.com/gitlab-org/gitlab-ce/raw/f441fe7b548fd9cb87eb2f0eadfa88b2e312b692/config/gitlab.yml.example) 
+To see all GitLab options see the [GitLab example config file](https://gitlab.com/gitlab-org/gitlab-ce/blob/master/config/gitlab.yml.example)
 
 | Variable                                 | Default / Mandatory                                                                                           | Description                                                                                                                         |
 |------------------------------------------|---------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
