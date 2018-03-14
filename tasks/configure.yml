@@ -1,0 +1,24 @@
+---
+- name: Install bundler gem
+  gem:
+    name: bundler
+  become_user: git
+
+- name: Read default config
+  include_vars:
+    file: "gitlab.yml.defaults"
+    name: gitlab_config_default
+
+- name: Place GitLab config
+  copy: 
+    content: "{{ gitlab_config_default | combine(gitlab_config, recursive=True) | to_nice_yaml }}"
+    dest: "{{ gitlab_install_path | mandatory }}/config/gitlab.yml"
+
+- name: Write secrets file
+  copy:
+    content: "{{ gitlab_secret_config | to_nice_yaml }}"
+    dest: "{{ gitlab_install_path | mandatory }}/config/secrets.yml"
+    mode: 0600
+    owner: git
+
+- import_tasks: gitlab_config_files.yml

@@ -16,14 +16,14 @@
     src: "{{ gitlab_rack_attack_config_path }}"
     dest: "{{ gitlab_install_path | mandatory }}/config/rack_attack.rb"
 
-- name: Place resque config 
-  template:
-    src: resque.yml.j2
+- name: Write resque config 
+  copy:
+    content: "{{ gitlab_resque_config | to_nice_yaml }}"
     dest: "{{ gitlab_install_path | mandatory }}/config/resque.yml"
 
-- name: Copy database config
-  template:
-    src: database.yml.j2
+- name: Write database config
+  copy:
+    content: "{{ gitlab_database_config | to_nice_yaml }}"
     dest: "{{ gitlab_install_path | mandatory }}/config/database.yml"
     owner: git
     mode: 0640

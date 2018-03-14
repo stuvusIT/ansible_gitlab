@@ -13,18 +13,8 @@
 - name: Install bundler gem
   gem:
     name: bundler
-  become: yes
-  become_user: git
 
 - import_tasks: postgres_install.yml
-
-- name: Create Redis socket directory
-  file:
-    path: "{{ redis_unixsocket | dirname }}"
-    state: directory
-    owner: redis
-    group: redis
-    mode: 0755
 
 - import_tasks: gitlab_setup.yml
 
@@ -64,5 +54,11 @@
   command: 'sudo -u git -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production'
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"
+
+- name: "Revoke superuser from database user {{ gitlab_db_user }}"
+  postgresql_user:
+    login_host: "{{ postgres_run_directory }}"
+    name: "{{ gitlab_db_user }}"
+    role_attr_flags: CREATEDB,NOSUPERUSER
 
 - import_tasks: systemd.yml

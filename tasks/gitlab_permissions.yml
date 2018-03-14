@@ -5,14 +5,19 @@
     owner: git
     recurse: yes
 
+- name: Read default config
+  include_vars:
+    file: "gitlab.yml.defaults"
+    name: gitlab_config_default
+
 - name: Place GitLab config
-  template: 
-    src: templates/gitlab.yml.j2
+  copy: 
+    content: "{{ gitlab_config_default | combine(gitlab_config, recursive=True) | to_nice_yaml }}"
     dest: "{{ gitlab_install_path | mandatory }}/config/gitlab.yml"
 
-- name: Copy secrets file
-  template:
-    src: templates/secrets.yml.j2
+- name: Write secrets file
+  copy:
+    content: "{{ gitlab_secret_config | to_nice_yaml }}"
     dest: "{{ gitlab_install_path | mandatory }}/config/secrets.yml"
     mode: 0600
     owner: git
@@ -24,24 +29,15 @@
     mode: 0750
     state: directory
 
+- name: Delete old log directory
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/log"
+    state: absent
+
 - name: Link log directory
   file:
-    src: /var/log/gitlab
+    src: /var/log/gitlab/
     dest: "{{ gitlab_install_path | mandatory }}/log"
-    state: link
-    owner: git
-
-- name: Create tmp directory
-  file:
-    path: "/tmp/gitlab"
-    owner: git
-    mode: 0750
-    state: directory
-
-- name: Link tmp directory
-  file:
-    src: /tmp/gitlab
-    dest: "{{ gitlab_install_path | mandatory }}/tmp"
     state: link
     owner: git
 
@@ -54,6 +50,8 @@
   file:
     path: "{{ gitlab_install_path | mandatory }}/tmp/sockets"
     mode: 0750
+    owner: git
+    group: www-data
 
 - name: Create public/uploads/ directory
   file:

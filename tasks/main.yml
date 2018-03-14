@@ -1,3 +1,10 @@
 ---
- - import_tasks: install.yml
+- name: Check if GitLab folder exists
+  stat: 
+    path: "{{ gitlab_install_path | mandatory }}"
+  register: result
 
+- import_tasks: install.yml
+  when:  not result.stat.exists
+
+- import_tasks: configure.yml
