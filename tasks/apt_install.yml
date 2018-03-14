@@ -32,7 +32,6 @@
 - name: Install required packages
   apt:
     name: "{{ item }}"
-    state: latest
   with_items:
     - python-psycopg2
     - sudo

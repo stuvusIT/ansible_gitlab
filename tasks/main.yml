@@ -1,6 +1,4 @@
 ---
-- import_tasks: apt_install.yml
-
 - name: Check if GitLab folder exists
   stat: 
     path: "{{ gitlab_install_path | mandatory }}"

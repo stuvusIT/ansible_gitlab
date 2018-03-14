@@ -1,4 +1,6 @@
 ---
+- import_tasks: apt_install.yml
+
 - name: Add GitLab user
   user:
     name: git
