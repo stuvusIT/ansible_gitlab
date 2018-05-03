@@ -1,9 +1,8 @@
 ---
-- name: Enable and start GitLab services
-  systemd: 
-    state: started
-    enabled: yes
+- name: Reload and restart systemd daemon
+  systemd:
     daemon_reload: yes
+    state: restarted
     name: "{{ item }}"
   with_items:
     - gitlab-sidekiq.service

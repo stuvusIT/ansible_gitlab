@@ -9,5 +9,17 @@
     - gitlab-workhorse.service
     - gitlab-mailroom.service
     - gitlab-gitaly.service
-  notify: Enable and start GitLab services
+  notify: Reload and restart systemd daemon
+
+- name: Start GitLab services
+  systemd: 
+    state: started
+    enabled: yes
+    name: "{{ item }}"
+  with_items:
+    - gitlab-sidekiq.service
+    - gitlab-unicorn.service
+    - gitlab-workhorse.service
+    - gitlab-mailroom.service
+    - gitlab-gitaly.service
 
