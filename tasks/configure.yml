@@ -22,3 +22,5 @@
     owner: git
 
 - import_tasks: gitlab_config_files.yml
+
+- import_tasks: systemd.yml
