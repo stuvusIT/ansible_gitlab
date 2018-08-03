@@ -16,6 +16,7 @@
   with_items:
     - "deb https://dl.yarnpkg.com/debian/ stable main"
     - "deb https://deb.nodesource.com/node_8.x artful main"
+    - "deb http://ftp.debian.org/debian stretch-backports main"
 
 - name: Remove ruby1.8
   apt:
