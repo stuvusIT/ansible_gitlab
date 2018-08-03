@@ -63,6 +63,17 @@
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"
 
+- name: Fetch Gitaly source with git and compile with go
+  command: 'sudo -u git -H bundle exec rake "gitlab:gitaly:install[/home/git/gitaly]" RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path | mandatory }}"
+
+- name: Restrict Gitaly socket access
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/tmp/sockets/private"
+    owner: git
+    mode: 0700
+
 - name: Initialize database and activate advanced features
   shell:
     cmd: 'yes "yes" | sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD={{ gitlab_root_password | mandatory }} GITLAB_ROOT_EMAIL={{ gitlab_root_mail | mandatory }}'
