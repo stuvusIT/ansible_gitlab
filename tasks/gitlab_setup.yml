@@ -63,6 +63,39 @@
   args:
     chdir: "{{ gitlab_install_path | mandatory }}"
 
+- name: Fetch Gitaly source with git and compile with go
+  command: 'sudo -u git -H bundle exec rake "gitlab:gitaly:install[/home/git/gitaly]" RAILS_ENV=production'
+  args:
+    chdir: "{{ gitlab_install_path | mandatory }}"
+
+- name: Restrict Gitaly socket access
+  file:
+    path: "{{ gitlab_install_path | mandatory }}/tmp/sockets/private"
+    owner: git
+    mode: 0700
+
+- name: Download systemd service files from gitlab
+  get_url:
+    url:  "https://gitlab.com/gitlab-org/gitlab-recipes/raw/master/init/systemd/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - gitlab-sidekiq.service
+    - gitlab-unicorn.service
+    - gitlab-mailroom.service
+    - gitlab-gitaly.service
+
+- name: Copy workhorse service file
+  template:
+    src: gitlab-workhorse.service.j2
+    dest: "/etc/systemd/system/gitlab-workhorse.service"
+
+- name: Start GitLab services
+  systemd: 
+    state: started
+    daemon_reload: yes
+    enabled: yes
+    name: "gitlab-gitaly.service"
+
 - name: Initialize database and activate advanced features
   shell:
     cmd: 'yes "yes" | sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production GITLAB_ROOT_PASSWORD={{ gitlab_root_password | mandatory }} GITLAB_ROOT_EMAIL={{ gitlab_root_mail | mandatory }}'

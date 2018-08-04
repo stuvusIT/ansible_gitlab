@@ -4,7 +4,7 @@ This role configures and installs a GitLab instance.
 
 ## Requirements
 
-This role depends on (postgres)[https://github.com/stuvusIT/postgresql], (redis)[https://github.com/stuvusIT/redis] , (nginx)[https://github.com/stuvusIT/nginx] and Ubuntu
+This role depends on (postgres)[https://github.com/stuvusIT/postgresql], (redis)[https://github.com/stuvusIT/redis] , (nginx)[https://github.com/stuvusIT/nginx] and Debian
 
 ## Role Variables
 

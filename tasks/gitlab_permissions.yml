@@ -36,7 +36,7 @@
 
 - name: Link log directory
   file:
-    src: /var/log/gitlab/
+    src: /var/log/gitlab
     dest: "{{ gitlab_install_path | mandatory }}/log"
     state: link
     owner: git
