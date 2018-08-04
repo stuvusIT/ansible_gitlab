@@ -30,7 +30,6 @@ production: &base
     enabled: true
   lfs:
     enabled: true
-  uploads:
   pages:
     enabled: false
     host: example.com
@@ -40,7 +39,6 @@ production: &base
   mattermost:
     enabled: false
     host: 'https://mattermost.example.com'
-  gravatar:
   cron_jobs:
     stuck_ci_jobs_worker:
       cron: "0 * * * *"
@@ -56,8 +54,6 @@ production: &base
       cron: "0 * * * *"
     pages_domain_verification_cron_worker:
       cron: "*/15 * * * *"
-  registry:
-  gitlab_ci:
   ldap:
     enabled: false
     servers:
@@ -92,31 +88,22 @@ production: &base
     auto_link_ldap_user: false
     auto_link_saml_user: false
     external_providers: []
-    providers:
-  shared:
   gitaly:
     client_path: /home/git/gitaly/bin
-    token:
   repositories:
     storages: 
       default:
         path: /home/git/repositories/
-        gitaly_address: unix:/home/git/gitlab/tmp/sockets/private/gitaly.socket 
+        gitaly_address: unix:/home/git/gitlab/tmp/sockets/private/gitaly.socket
   backup:
-    path: "tmp/backups"   
+    path: "tmp/backups"
   gitlab_shell:
     path: /home/git/gitlab-shell/
     hooks_path: /home/git/gitlab-shell/hooks/
     upload_pack: true
     receive_pack: true
-  workhorse:
   git:
     bin_path: /usr/bin/git
-  webpack:
   monitoring:
     ip_whitelist:
       - 127.0.0.0/8
-    sidekiq_exporter:
-  extra:
-  rack_attack:
-    git_basic_auth:
