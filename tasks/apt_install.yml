@@ -18,15 +18,10 @@
     - "deb https://deb.nodesource.com/node_8.x artful main"
     - "deb http://ftp.debian.org/debian stretch-backports main"
 
-- name: Remove ruby1.8
+- name: Remove Ruby 1.8
   apt:
     name: ruby1.8
     state: absent
-
-- name: Update apt repositories cache
-  apt:
-    update_cache: yes
-  changed_when: false
 
 - name: Install required packages
   apt:
@@ -67,4 +62,3 @@
     - libpq-dev
     - libpq5
     - bundler
-
